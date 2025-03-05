@@ -62,3 +62,7 @@ func (rV *requestValidation) Validate(request interfaces.RequestValidated) bool 
 
 	return true
 }
+
+func NewValidationRaw() *validator.Validate {
+	return validator.New()
+}
