@@ -36,3 +36,19 @@ func InternalError(err error) *ApiError {
 		ErrorMessage: "internal server error",
 	}
 }
+
+func NotFoundError(err error) *ApiError {
+	return &ApiError{
+		Typ:          ErrorNotFound,
+		Err:          err,
+		ErrorMessage: "not found error",
+	}
+}
+
+func BadRequestError(err error) *ApiError {
+	return &ApiError{
+		Typ:          ErrorBadData,
+		Err:          err,
+		ErrorMessage: "bad request error",
+	}
+}

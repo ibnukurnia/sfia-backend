@@ -48,3 +48,9 @@ func (provider *HandlerProvider) Skill() *skillHandler {
 		skillService: provider.serviceProvider.SkillService,
 	}
 }
+
+func (provider *HandlerProvider) RoleGroup() *roleGroupHandler {
+	return &roleGroupHandler{
+		roleGroupService: provider.serviceProvider.RoleGroupService,
+	}
+}

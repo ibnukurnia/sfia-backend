@@ -17,6 +17,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	skillHandlers := handlers.Skill()
 	roleHandlers := handlers.Role()
 	departmentHandlers := handlers.Department()
+	roleGroupHandlers := handlers.RoleGroup()
 
 	v1 := e.Group("api/v1")
 
@@ -67,6 +68,24 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 
 		assessmentsEp.GET("trainings", participantHandlers.GetParticipantRoleTraining)
 		assessmentsEp.POST("trainings", participantHandlers.CreateParticipantTraining)
+	}
+
+	backOffice := v1.Group("backoffice")
+	{
+		backOffice.GET("role-group", roleGroupHandlers.GetRoleGroup)
+		backOffice.POST("role-group", roleGroupHandlers.AddRoleGroup)
+		backOffice.PUT("role-group", roleGroupHandlers.UpdateRoleGroup)
+		backOffice.DELETE("role-group/:id", roleGroupHandlers.DeleteRoleGroup)
+
+		backOffice.GET("role", roleHandlers.GetRoleList)
+		backOffice.POST("role", roleHandlers.AddRole)
+		backOffice.PUT("role", roleHandlers.UpdateRole)
+		backOffice.DELETE("role/:id", roleHandlers.DeleteRole)
+
+		backOffice.GET("skillset", skillHandlers.GetSkillsetList)
+		backOffice.POST("skillset", skillHandlers.AddSkillset)
+		backOffice.PUT("skillset", skillHandlers.UpdateSkillset)
+		backOffice.DELETE("skillset/:id", skillHandlers.DeleteSkillset)
 	}
 
 }

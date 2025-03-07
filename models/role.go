@@ -15,6 +15,7 @@ type Skill struct {
 	Base
 	Name          string
 	Code          string
+	Description   string
 	RoleSkills    []RoleSkill
 	SfiaQuestions []SfiaQuestion `gorm:"foreignKey:SkillId"`
 }

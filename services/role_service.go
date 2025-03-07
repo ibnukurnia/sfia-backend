@@ -1,7 +1,9 @@
 package services
 
 import (
+	"errors"
 	"sv-sfia/dto"
+	"sv-sfia/dto/requests"
 	"sv-sfia/dto/responses"
 	"sv-sfia/models"
 
@@ -144,4 +146,113 @@ func (service RoleService) GetRoleTraining(participantId uuid.UUID) (*responses.
 	dump.P(roleResponse)
 
 	return &responses.ParticipantTraingResponse{Roles: roleResponse}, nil
+}
+
+func (service *RoleService) GetRoleList() ([]responses.RoleListResponse, *dto.ApiError) {
+	roles := []responses.RoleListResponse{}
+
+	err := service.db.Table("roles").
+			Select("roles.uuid, roles.name, role_groups.uuid as group_id, role_groups.name AS group_name").
+			Joins("LEFT JOIN role_groups ON roles.group_id = role_groups.uuid AND role_groups.deleted_at IS NULL").
+			Where("roles.deleted_at IS NULL").
+			Order("roles.created_at ASC").
+			Find(&roles).Error
+
+	if err != nil {
+		zap.L().Error("error querying roles", zap.Error(err))
+
+		return nil, dto.InternalError(err)
+	}
+
+	return roles, nil
+}
+
+func (service *RoleService) AddRole(req requests.AddRoleRequest) (*dto.ApiError) {
+	roleGroup := models.RoleGroup{}
+
+	err := service.db.Where("uuid = ?", req.RoleGroupId).First(&roleGroup).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		zap.L().Warn("role group not found", zap.String("uuid", req.RoleGroupId.String()))
+		return dto.NotFoundError(err)
+	}
+
+	if err != nil {
+		zap.L().Error("error querying role group", zap.Error(err))
+		return dto.InternalError(err)
+	}
+
+	role := models.Role{
+		Name: req.Name,
+		GroupId: req.RoleGroupId,
+	}
+
+	if err := service.db.Create(&role).Error; err != nil {
+		zap.L().Error("error creating role", zap.Error(err))
+
+		return dto.InternalError(err)
+	}
+
+	return nil
+}
+
+func (service *RoleService) UpdateRole(req requests.UpdateRoleRequest) ( *dto.ApiError) {
+	role := models.Role{}
+
+	err := service.db.Where("uuid = ?", req.RoleId).First(&role).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		zap.L().Warn("role not found", zap.String("uuid", req.RoleId))
+		return dto.NotFoundError(err)
+	}
+	
+	if err != nil {
+		zap.L().Error("error querying role", zap.Error(err))
+		return dto.InternalError(err)
+	}
+
+	roleGroup := models.RoleGroup{}
+
+	err = service.db.Where("uuid = ?", req.RoleGroupId).First(&roleGroup).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		zap.L().Warn("role group not found", zap.String("uuid", req.RoleGroupId.String()))
+		return dto.NotFoundError(err)
+	}
+
+	if err != nil {
+		zap.L().Error("error querying role group", zap.Error(err))
+		return dto.InternalError(err)
+	}
+
+	role.Name = req.Name
+	role.GroupId = req.RoleGroupId
+
+
+	if err = service.db.Save(&role).Error; err != nil {
+		zap.L().Error("error updating role", zap.Error(err))
+		return  dto.InternalError(err)
+	}
+	 
+
+	return nil
+}
+
+func (service *RoleService) DeleteRole(roleId string) (*dto.ApiError) {
+	role := models.Role{}
+
+	err := service.db.Where("uuid = ?", roleId).First(&role).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		zap.L().Warn("role not found", zap.String("uuid", roleId))
+		return dto.NotFoundError(err)
+	}
+
+	if err != nil {
+		zap.L().Error("error querying role", zap.Error(err))
+		return dto.InternalError(err)
+	}
+
+	if err = service.db.Delete(&role).Error; err != nil {
+		zap.L().Error("error deleting role", zap.Error(err))
+		return dto.InternalError(err)
+	}
+
+	return nil
 }
