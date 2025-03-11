@@ -18,6 +18,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	roleHandlers := handlers.Role()
 	departmentHandlers := handlers.Department()
 	roleGroupHandlers := handlers.RoleGroup()
+	tresholdHandlers := handlers.Treshold()
 
 	v1 := e.Group("api/v1")
 
@@ -86,6 +87,26 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.POST("skillset", skillHandlers.AddSkillset)
 		backOffice.PUT("skillset", skillHandlers.UpdateSkillset)
 		backOffice.DELETE("skillset/:id", skillHandlers.DeleteSkillset)
+
+		backOffice.GET("treshold", tresholdHandlers.GetTresholdList)
+		backOffice.POST("treshold", tresholdHandlers.AddTreshold)
+		backOffice.PUT("treshold", tresholdHandlers.UpdateTreshold)
+		backOffice.DELETE("treshold/:id", tresholdHandlers.DeleteTreshold)
+
+		backOffice.GET("department", departmentHandlers.GetDepartments)
+		backOffice.POST("department", departmentHandlers.AddDepartment)
+		backOffice.PUT("department", departmentHandlers.UpdateDepartment)
+		backOffice.DELETE("department/:id", departmentHandlers.DeleteDepartment)
+
+		backOffice.GET("department/:id/teams", departmentHandlers.GetDepartmentTeams)
+		backOffice.POST("department/:id/teams", departmentHandlers.AddDepartmentTeam)
+		backOffice.PUT("department/:id/teams", departmentHandlers.UpdateDepartmentTeam)
+		backOffice.DELETE("department/:id/teams/:teamId", departmentHandlers.DeleteDepartmentTeam)
+
+		backOffice.GET("department/:id/units", departmentHandlers.GetDepartmentUnits)
+		backOffice.POST("department/:id/units", departmentHandlers.AddDepartmentUnit)
+		backOffice.PUT("department/:id/units", departmentHandlers.UpdateDepartmentUnit)
+		backOffice.DELETE("department/:id/units/:unitId", departmentHandlers.DeleteDepartmentUnit)
 	}
 
 }
