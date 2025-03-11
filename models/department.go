@@ -12,12 +12,14 @@ type Department struct {
 type DepartmentTeam struct {
 	Base
 	DepartmentId uuid.UUID
+	Name 	   string	
 	Department
 }
 
 type DepartmentUnit struct {
 	Base
 	DepartmentId uuid.UUID
+	Name 	   string
 	Department
 	Dujs []Duj
 }

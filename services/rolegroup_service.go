@@ -32,7 +32,6 @@ func (service *RoleGroupService) GetRoleGroup() ([]responses.RoleGroupResponse, 
 
 	if err != nil {
 		zap.L().Error("error querying roles", zap.Error(err))
-
 		return nil, dto.InternalError(err)
 	}
 

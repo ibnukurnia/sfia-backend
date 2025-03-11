@@ -54,3 +54,9 @@ func (provider *HandlerProvider) RoleGroup() *roleGroupHandler {
 		roleGroupService: provider.serviceProvider.RoleGroupService,
 	}
 }
+
+func (provider *HandlerProvider) Treshold() *tresholdHandler {
+	return &tresholdHandler{
+		tresholdService: provider.serviceProvider.TresholdService,
+	}
+}
