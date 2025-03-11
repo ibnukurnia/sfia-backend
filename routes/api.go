@@ -19,6 +19,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	departmentHandlers := handlers.Department()
 	roleGroupHandlers := handlers.RoleGroup()
 	tresholdHandlers := handlers.Treshold()
+	parameterHandlers := handlers.Parameter()
 
 	v1 := e.Group("api/v1")
 
@@ -107,6 +108,14 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.POST("department/:id/units", departmentHandlers.AddDepartmentUnit)
 		backOffice.PUT("department/:id/units", departmentHandlers.UpdateDepartmentUnit)
 		backOffice.DELETE("department/:id/units/:unitId", departmentHandlers.DeleteDepartmentUnit)
+
+		backOffice.GET("parameter", parameterHandlers.GetParameterList)
+		backOffice.POST("parameter/score", parameterHandlers.AddParameterScore)
+		backOffice.POST("parameter/difficulty", parameterHandlers.AddParameterDifficulty)
+		backOffice.PUT("parameter/score", parameterHandlers.UpdateParameterScore)
+		backOffice.PUT("parameter/difficulty", parameterHandlers.UpdateParameterDifficulty)
+		backOffice.DELETE("parameter/score/:id", parameterHandlers.DeleteParameterScore)
+		backOffice.DELETE("parameter/difficulty/:id", parameterHandlers.DeleteParameterDifficulty)
 	}
 
 }
