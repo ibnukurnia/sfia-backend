@@ -55,14 +55,20 @@ func (provider *HandlerProvider) RoleGroup() *roleGroupHandler {
 	}
 }
 
-func (provider *HandlerProvider) Treshold() *parameterHandler {
-	return &parameterHandler{
-		parameterService: provider.serviceProvider.TresholdService,
+func (provider *HandlerProvider) Treshold() *tresholdHandler {
+	return &tresholdHandler{
+		tresholdService: provider.serviceProvider.TresholdService,
 	}
 }
 
 func (provider *HandlerProvider) Parameter() *parameterHandler {
 	return &parameterHandler{
 		parameterService: provider.serviceProvider.ParameterService,
+	}
+}
+
+func (provider *HandlerProvider) DujAdmin() *dujAdminHandler {
+	return &dujAdminHandler{
+		dujAdminService: provider.serviceProvider.DujAdminService,
 	}
 }

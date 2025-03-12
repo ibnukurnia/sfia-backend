@@ -13,8 +13,9 @@ type ServiceProvider struct {
 	ToolService        *ToolService
 	TrainingService    *TrainingService
 	RoleGroupService   *RoleGroupService
-	TresholdService	   *ParameterService
+	TresholdService	   *TresholdService
 	ParameterService   *ParameterService
+	DujAdminService	*DujAdminService
 }
 
 func NewServiceProvider(db *gorm.DB) *ServiceProvider {
@@ -31,5 +32,6 @@ func NewServiceProvider(db *gorm.DB) *ServiceProvider {
 		RoleGroupService: newRoleGroupService(db),
 		TresholdService: newTresholdService(db),
 		ParameterService:  newParameterService(db),
+		DujAdminService: newDujAdminService(db),
 	}
 }
