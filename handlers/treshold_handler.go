@@ -14,8 +14,8 @@ type tresholdHandler struct {
 	tresholdService *services.TresholdService
 }
 
-func (handler *parameterHandler) GetTresholdList(ctx *gin.Context) {
-	tresholds, err := handler.parameterService.GetTresholdList()
+func (handler *tresholdHandler) GetTresholdList(ctx *gin.Context) {
+	tresholds, err := handler.tresholdService.GetTresholdList()
 	if err != nil {
 		responses.ResponseError(ctx, err)
 		return
@@ -24,14 +24,14 @@ func (handler *parameterHandler) GetTresholdList(ctx *gin.Context) {
 	responses.WriteApiResponse(ctx, tresholds, "success get treshold list", 200)
 }
 
-func (handler *parameterHandler) AddTreshold(ctx *gin.Context) {
+func (handler *tresholdHandler) AddTreshold(ctx *gin.Context) {
 	request := requests.AddTreshold{}
 
 	if !requests.NewValidation(ctx).Validate(&request) {
 		return
 	}
 
-	if err := handler.parameterService.AddTreshold(request); err != nil {
+	if err := handler.tresholdService.AddTreshold(request); err != nil {
 		responses.ResponseError(ctx, err)
 		return
 	}
@@ -39,14 +39,14 @@ func (handler *parameterHandler) AddTreshold(ctx *gin.Context) {
 	responses.WriteApiResponse(ctx, nil, "success add treshold", 200)
 }
 
-func (handler *parameterHandler) UpdateTreshold(ctx *gin.Context) {
+func (handler *tresholdHandler) UpdateTreshold(ctx *gin.Context) {
 	request := requests.UpdateTreshold{}
 
 	if !requests.NewValidation(ctx).Validate(&request) {
 		return
 	}
 
-	if err := handler.parameterService.UpdateTreshold(request); err != nil {
+	if err := handler.tresholdService.UpdateTreshold(request); err != nil {
 		responses.ResponseError(ctx, err)
 		return
 	}
@@ -54,7 +54,7 @@ func (handler *parameterHandler) UpdateTreshold(ctx *gin.Context) {
 	responses.WriteApiResponse(ctx, nil, "success update treshold", 200)
 }
 
-func (handler *parameterHandler) DeleteTreshold(ctx *gin.Context) {
+func (handler *tresholdHandler) DeleteTreshold(ctx *gin.Context) {
 	tresholdID := ctx.Param("id")
 
 	if err := requests.NewValidationRaw().Var(tresholdID, "required,uuid"); err != nil {
@@ -62,7 +62,7 @@ func (handler *parameterHandler) DeleteTreshold(ctx *gin.Context) {
 		return
 	}
 
-	if err := handler.parameterService.DeleteTreshold(tresholdID); err != nil {
+	if err := handler.tresholdService.DeleteTreshold(tresholdID); err != nil {
 		responses.ResponseError(ctx, err)
 		return
 	}

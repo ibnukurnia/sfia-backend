@@ -20,6 +20,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	roleGroupHandlers := handlers.RoleGroup()
 	tresholdHandlers := handlers.Treshold()
 	parameterHandlers := handlers.Parameter()
+	dujAdminHandlers := handlers.DujAdmin()
 
 	v1 := e.Group("api/v1")
 
@@ -116,6 +117,11 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.PUT("parameter/difficulty", parameterHandlers.UpdateParameterDifficulty)
 		backOffice.DELETE("parameter/score/:id", parameterHandlers.DeleteParameterScore)
 		backOffice.DELETE("parameter/difficulty/:id", parameterHandlers.DeleteParameterDifficulty)
+
+		backOffice.GET("duj", dujAdminHandlers.GetDujAdminList)
+		backOffice.POST("duj", dujAdminHandlers.AddDujAdmin)
+		backOffice.PUT("duj", dujAdminHandlers.UpdateDujAdmin)
+		backOffice.DELETE("duj/:id", dujAdminHandlers.DeleteDujAdmin)
 	}
 
 }

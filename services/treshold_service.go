@@ -16,11 +16,11 @@ type TresholdService struct {
 	db *gorm.DB
 }
 
-func newTresholdService(db *gorm.DB) *ParameterService {
-	return &ParameterService{db: db}
+func newTresholdService(db *gorm.DB) *TresholdService {
+	return &TresholdService{db: db}
 }
 
-func (service ParameterService) GetTresholdList() (responses.TresholdResponse, *dto.ApiError) {
+func (service TresholdService) GetTresholdList() (responses.TresholdResponse, *dto.ApiError) {
 	tresholds := []models.Treshold{}
 
 	err := service.db.
@@ -57,7 +57,7 @@ func (service ParameterService) GetTresholdList() (responses.TresholdResponse, *
 	return results, nil
 }
 
-func (service ParameterService) AddTreshold(req requests.AddTreshold) *dto.ApiError {
+func (service TresholdService) AddTreshold(req requests.AddTreshold) *dto.ApiError {
 	treshold := models.Treshold{
 		Name:        req.Name,
 		Category:    req.Category,
@@ -76,7 +76,7 @@ func (service ParameterService) AddTreshold(req requests.AddTreshold) *dto.ApiEr
 	return nil
 }
 
-func (service ParameterService) UpdateTreshold(req requests.UpdateTreshold) *dto.ApiError {
+func (service TresholdService) UpdateTreshold(req requests.UpdateTreshold) *dto.ApiError {
 	treshold := models.Treshold{}
 
 	err := service.db.Where("uuid = ?", req.TresholdId).First(&treshold).Error
@@ -106,7 +106,7 @@ func (service ParameterService) UpdateTreshold(req requests.UpdateTreshold) *dto
 	return nil
 }
 
-func (service ParameterService) DeleteTreshold(tresholdId string) *dto.ApiError {
+func (service TresholdService) DeleteTreshold(tresholdId string) *dto.ApiError {
 	treshold := models.Treshold{}
 
 	err := service.db.Where("uuid = ?", tresholdId).First(&treshold).Error
