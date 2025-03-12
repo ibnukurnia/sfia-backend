@@ -72,3 +72,9 @@ func (provider *HandlerProvider) DujAdmin() *dujAdminHandler {
 		dujAdminService: provider.serviceProvider.DujAdminService,
 	}
 }
+
+func (provider *HandlerProvider) UserAdmin() *userAdminHandler {
+	return &userAdminHandler{
+		userAdminService: provider.serviceProvider.UserAdminService,
+	}
+}

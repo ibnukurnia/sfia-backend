@@ -8,6 +8,7 @@ type Participant struct {
 	Password string
 	Pn       string
 	Email    string
+	RoleAccess string `gorm:"type:role_access_enum;default:user;not null"`
 
 	ParticipantRole       *ParticipantRole
 	ParticipantDepartment *ParticipantDepartment
