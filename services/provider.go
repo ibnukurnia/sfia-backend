@@ -17,6 +17,7 @@ type ServiceProvider struct {
 	ParameterService   *ParameterService
 	DujAdminService	*DujAdminService
 	UserAdminService *UserAdminService
+	TrainingMasterService *TrainingMasterService
 }
 
 func NewServiceProvider(db *gorm.DB) *ServiceProvider {
@@ -35,5 +36,6 @@ func NewServiceProvider(db *gorm.DB) *ServiceProvider {
 		ParameterService:  newParameterService(db),
 		DujAdminService: newDujAdminService(db),
 		UserAdminService: newUserAdminService(db),
+		TrainingMasterService: newTrainingMasterService(db),
 	}
 }

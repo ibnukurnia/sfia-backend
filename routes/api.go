@@ -22,6 +22,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	parameterHandlers := handlers.Parameter()
 	dujAdminHandlers := handlers.DujAdmin()
 	userAdminHandlers := handlers.UserAdmin()
+	trainigMasterHandlers := handlers.TrainingMaster()
 
 	v1 := e.Group("api/v1")
 
@@ -127,6 +128,11 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.GET("user-admin", userAdminHandlers.GetUserAdmin)
 		backOffice.PUT("user-admin", userAdminHandlers.UpdateUserRole)
 		backOffice.DELETE("user-admin/:id", userAdminHandlers.DeleteUserAdmin)
+
+		backOffice.GET("training-master", trainigMasterHandlers.GetTrainingMaster)
+		backOffice.POST("training-master", trainigMasterHandlers.AddTrainingMaster)
+		backOffice.PUT("training-master", trainigMasterHandlers.UpdateTrainingMaster)
+		backOffice.DELETE("training-master/:id", trainigMasterHandlers.DeleteTrainingMaster)
 	}
 
 }

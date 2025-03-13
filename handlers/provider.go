@@ -78,3 +78,9 @@ func (provider *HandlerProvider) UserAdmin() *userAdminHandler {
 		userAdminService: provider.serviceProvider.UserAdminService,
 	}
 }
+
+func (provider *HandlerProvider) TrainingMaster() *trainingMasterHandler {
+	return &trainingMasterHandler{
+		trainingMasterService: provider.serviceProvider.TrainingMasterService,
+	}
+}
