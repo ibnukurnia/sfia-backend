@@ -84,3 +84,9 @@ func (provider *HandlerProvider) TrainingMaster() *trainingMasterHandler {
 		trainingMasterService: provider.serviceProvider.TrainingMasterService,
 	}
 }
+
+func (provider *HandlerProvider) Tools() *toolsHandler {
+	return &toolsHandler{
+		toolsService: provider.serviceProvider.ToolsMasterServices,
+	}
+}
