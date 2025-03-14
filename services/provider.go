@@ -1,6 +1,9 @@
 package services
 
-import "gorm.io/gorm"
+import (
+	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
+)
 
 type ServiceProvider struct {
 	AssessmentService  *AssessmentService
@@ -18,9 +21,10 @@ type ServiceProvider struct {
 	DujAdminService	*DujAdminService
 	UserAdminService *UserAdminService
 	TrainingMasterService *TrainingMasterService
+	ToolsMasterServices *ToolsMasterService
 }
 
-func NewServiceProvider(db *gorm.DB) *ServiceProvider {
+func NewServiceProvider(db *gorm.DB, minioClient *minio.Client) *ServiceProvider {
 	return &ServiceProvider{
 		AssessmentService:  newAssessmentService(db),
 		RoleService:        newRoleService(db),
@@ -37,5 +41,6 @@ func NewServiceProvider(db *gorm.DB) *ServiceProvider {
 		DujAdminService: newDujAdminService(db),
 		UserAdminService: newUserAdminService(db),
 		TrainingMasterService: newTrainingMasterService(db),
+		ToolsMasterServices: newToolsMasterService(db, minioClient),
 	}
 }

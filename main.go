@@ -13,6 +13,8 @@ import (
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 func initZapLogger() *zap.Logger {
@@ -43,7 +45,19 @@ func main() {
 		logger.Fatal("Failed to connect database: ", zap.Error(err))
 	}
 
-	serviceProvider := services.NewServiceProvider(db)
+	
+	host := fmt.Sprintf("%s:%s", os.Getenv("MINIO_IP"), os.Getenv("MINIO_PORT_API"))
+
+	minioClient, err := minio.New(host, &minio.Options{
+		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY"), os.Getenv("MINIO_SECRET_KEY"), ""),
+		Secure: false, 
+	})
+
+	if err != nil {
+		logger.Fatalf("Failed to initialize MinIO client: %v", err)
+	}
+
+	serviceProvider := services.NewServiceProvider(db, minioClient)
 
 	srv := gin.Default()
 

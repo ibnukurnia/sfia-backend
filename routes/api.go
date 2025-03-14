@@ -23,6 +23,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	dujAdminHandlers := handlers.DujAdmin()
 	userAdminHandlers := handlers.UserAdmin()
 	trainigMasterHandlers := handlers.TrainingMaster()
+	toolMasterHandlers := handlers.Tools()
 
 	v1 := e.Group("api/v1")
 
@@ -133,6 +134,11 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.POST("training-master", trainigMasterHandlers.AddTrainingMaster)
 		backOffice.PUT("training-master", trainigMasterHandlers.UpdateTrainingMaster)
 		backOffice.DELETE("training-master/:id", trainigMasterHandlers.DeleteTrainingMaster)
+
+		backOffice.GET("tools", toolMasterHandlers.GetToolsList)
+		backOffice.POST("tools", toolMasterHandlers.AddTool)
+		backOffice.PUT("tools", toolMasterHandlers.UpdateTools)
+		backOffice.DELETE("tools/:id", toolMasterHandlers.DeleteTools)
 	}
 
 }
