@@ -10,6 +10,7 @@ type Training struct {
 	NeedCertification bool    `json:"need_certification"`
 	IsNeeded          bool    `json:"is_needed"`
 	Priority          *int8   `json:"priority"`
+	RoleId            *string `json:"role_id"`
 }
 
 func (r CreateParticipantTrainingRequest) Messages() map[string]string {

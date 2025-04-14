@@ -20,7 +20,7 @@ import (
 )
 
 type ToolsMasterService struct {
-	db *gorm.DB
+	db          *gorm.DB
 	minioClient *minio.Client
 }
 
@@ -29,7 +29,7 @@ func newToolsMasterService(db *gorm.DB, minioClient *minio.Client) *ToolsMasterS
 }
 
 func (service ToolsMasterService) GetToolList() ([]responses.ToolsResponse, *dto.ApiError) {
-	tools := []models.Tools{}
+	tools := []models.Tool{}
 
 	err := service.db.
 		Order("created_at asc").
@@ -70,14 +70,13 @@ func (service ToolsMasterService) AddTools(req requests.AddToolsRequest, fileHea
 	}
 
 	file, err := fileHeader.Open()
-	
+
 	if err != nil {
 		zap.L().Error("failed open file")
 		return dto.BadRequestError(errors.New("failed open file"))
 	}
 	defer file.Close()
 
-	
 	fileName := strings.ReplaceAll(req.Name, " ", "_") + fileExt
 	objectName := os.Getenv("MINIO_TOOLS_PATH") + "/" + fileName
 	contentType := fileHeader.Header.Get("Content-Type")
@@ -86,9 +85,9 @@ func (service ToolsMasterService) AddTools(req requests.AddToolsRequest, fileHea
 		return dto.BadRequestError(errors.New("failed upload file"))
 	}
 
-	tool := models.Tools{
-		Name:     req.Name,
-		Url:   fileName,
+	tool := models.Tool{
+		Name: req.Name,
+		Url:  fileName,
 	}
 
 	err = service.db.Create(&tool).Error
@@ -101,7 +100,7 @@ func (service ToolsMasterService) AddTools(req requests.AddToolsRequest, fileHea
 }
 
 func (service ToolsMasterService) UpdateTools(req requests.UpdateToolsRequest, fileHeader *multipart.FileHeader) *dto.ApiError {
-	tools := models.Tools{}
+	tools := models.Tool{}
 
 	err := service.db.
 		Where("uuid = ?", req.ToolsId).
@@ -131,7 +130,7 @@ func (service ToolsMasterService) UpdateTools(req requests.UpdateToolsRequest, f
 	}
 
 	file, err := fileHeader.Open()
-	
+
 	if err != nil {
 		zap.L().Error("failed open file")
 		return dto.BadRequestError(errors.New("failed open file"))
@@ -163,21 +162,21 @@ func (service ToolsMasterService) UpdateTools(req requests.UpdateToolsRequest, f
 }
 
 func (service ToolsMasterService) DeleteTools(toolsId string) *dto.ApiError {
-	tools := models.Tools{}
+	tools := models.Tool{}
 
 	err := service.db.
 		Where("uuid = ?", toolsId).
 		First(&tools).Error
 
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			zap.L().Warn("tools master not found", zap.String("uuid", toolsId))
-			return dto.NotFoundError(err)
-		}
-	
-		if err != nil {
-			zap.L().Error("error get tools master", zap.Error(err))
-			return dto.InternalError(err)
-		}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		zap.L().Warn("tools master not found", zap.String("uuid", toolsId))
+		return dto.NotFoundError(err)
+	}
+
+	if err != nil {
+		zap.L().Error("error get tools master", zap.Error(err))
+		return dto.InternalError(err)
+	}
 
 	oldFile := os.Getenv("MINIO_TOOLS_PATH") + "/" + tools.Url
 	RemoveFile(service.minioClient, os.Getenv("MINIO_BUCKET_NAME"), oldFile)

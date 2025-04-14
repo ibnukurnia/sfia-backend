@@ -9,7 +9,7 @@ type job struct {
 	CurrentJob   bool    `json:"current_job"`
 	HaveTrouble  bool    `json:"have_trouble"`
 	TroubleCause *string `json:"trouble_cause"`
-	Id           *string `json:"id"`
+	Id           string  `json:"id"`
 }
 
 func (r *DujAssessmentRequest) Messages() map[string]string {

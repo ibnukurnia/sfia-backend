@@ -5,8 +5,10 @@ type CreateParticipantToolRequest struct {
 }
 
 type ToolRequest struct {
-	Tool  string `json:"tool"`
-	Level string `json:"level"`
+	Name     string  `json:"name"`
+	Id       *string `json:"id"`
+	Level    string  `json:"level"`
+	Evidence string  `json:"evidence"`
 }
 
 func (r *CreateParticipantToolRequest) Messages() map[string]string {

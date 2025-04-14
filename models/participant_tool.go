@@ -5,7 +5,10 @@ import "github.com/google/uuid"
 type ParticipantTool struct {
 	Base
 	ParticipantId uuid.UUID
-	Tool          string
+	ToolId        uuid.UUID
+	AssessmentId  uuid.UUID
+	Name          string `gorm:"column:tool"`
 	Level         string
 	Evidence      string
+	Tool          Tool
 }

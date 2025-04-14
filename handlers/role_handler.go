@@ -67,7 +67,7 @@ func (handler *roleHandler) UpdateRole(ctx *gin.Context) {
 
 func (handler *roleHandler) DeleteRole(ctx *gin.Context) {
 	roleID := ctx.Param("id")
-	
+
 	if err := requests.NewValidationRaw().Var(roleID, "required,uuid"); err != nil {
 		err := dto.BadRequestError(errors.New("role id is required"))
 		responses.ResponseError(ctx, err)
@@ -81,3 +81,15 @@ func (handler *roleHandler) DeleteRole(ctx *gin.Context) {
 
 	responses.WriteApiResponse(ctx, nil, "success delete role", 200)
 }
+
+// func (handler roleHandler) GetRoleSkills(ctx *gin.Context) {
+// 	roleIds :=
+// 	roles, err := handler.roleService.GetRoleSkills()
+// 	if err != nil {
+// 		responses.ResponseError(ctx, err)
+
+// 		return
+// 	}
+
+// 	responses.WriteApiResponse(ctx, roles, "success get roles", 200)
+// }

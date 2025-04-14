@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"sv-sfia/dto"
 	"sv-sfia/dto/requests"
 	"sv-sfia/dto/responses"
@@ -11,18 +12,28 @@ import (
 
 type skillHandler struct {
 	skillService *services.SkillService
+	roleSevice   *services.RoleService
 }
 
 func (handler skillHandler) GetSkills(ctx *gin.Context) {
-	// roleIds := []string{"48af133c-6898-4e1d-a03b-f7a35a2afb64", "4a774b40-0eed-4e87-9312-220a84f3eb82", "e3e8b7c1-e908-4cc0-a915-c0f6cb1ed5f3"}
+	roleIds := ctx.QueryArray("role_id[]")
 
-	// res, apiErr := handler.skillService.FindSkillByRoleIds(dto.ParticipantRoleIdsDto{})
-	// if apiErr != nil {
-	// 	responses.ResponseError(ctx, apiErr)
-	// 	return
-	// }
+	if len(roleIds) < 1 {
+		responses.ResponseError(ctx, &dto.ApiError{
+			Err:          fmt.Errorf("role_id is required"),
+			ErrorMessage: "role_id is required",
+			Typ:          dto.ErrorBadData,
+		})
+		return
+	}
 
-	responses.WriteApiResponse(ctx, nil, "success", 200)
+	res, apiErr := handler.roleSevice.GetRoleSkills(roleIds)
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, res, "success", 200)
 }
 
 func (handler skillHandler) GetSkillsetList(ctx *gin.Context) {

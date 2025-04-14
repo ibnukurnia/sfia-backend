@@ -12,4 +12,5 @@ type ParticipantTraining struct {
 	Priority      *int8
 	TrainingId    uuid.UUID
 	ParticipantId uuid.UUID
+	AssessmentId  uuid.UUID
 }

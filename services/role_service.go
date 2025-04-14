@@ -6,6 +6,7 @@ import (
 	"sv-sfia/dto/requests"
 	"sv-sfia/dto/responses"
 	"sv-sfia/models"
+	"sv-sfia/utils"
 
 	"github.com/google/uuid"
 	"github.com/gookit/goutil/dump"
@@ -21,6 +22,43 @@ func newRoleService(db *gorm.DB) *RoleService {
 	return &RoleService{
 		db: db,
 	}
+}
+
+func (service *RoleService) GetRoleSkills(roleIds []string) ([]responses.SkillResponse, *dto.ApiError) {
+	skills := []models.RoleSkill{}
+
+	roleUUids := []uuid.UUID{}
+
+	for _, roleId := range roleIds {
+		id, err := utils.ParseUUid(roleId)
+		if err != nil {
+			return nil, err
+		}
+
+		roleUUids = append(roleUUids, id)
+	}
+
+	err := service.db.Distinct("skill_id").
+		Preload("Skill").
+		Where("role_id in ?", roleUUids).
+		Find(&skills).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		zap.L().Error("error query participant skills", zap.Error(err))
+
+		return nil, dto.InternalError(err)
+	}
+
+	res := []responses.SkillResponse{}
+
+	for _, skill := range skills {
+		res = append(res, responses.SkillResponse{
+			Id:    skill.SkillId.String(),
+			Skill: skill.Skill.Name,
+		})
+	}
+
+	return res, nil
 }
 
 func (service *RoleService) GetRoles() ([]responses.GroupedRolesResponse, *dto.ApiError) {
@@ -138,6 +176,7 @@ func (service RoleService) GetRoleTraining(participantId uuid.UUID) (*responses.
 		}
 
 		roleResponse = append(roleResponse, responses.RoleTrainingResponse{
+			Id:        role.Uuid.String(),
 			Name:      role.Name,
 			Trainings: trainings,
 		})
@@ -152,11 +191,11 @@ func (service *RoleService) GetRoleList() ([]responses.RoleListResponse, *dto.Ap
 	roles := []responses.RoleListResponse{}
 
 	err := service.db.Table("roles").
-			Select("roles.uuid, roles.name, role_groups.uuid as group_id, role_groups.name AS group_name").
-			Joins("LEFT JOIN role_groups ON roles.group_id = role_groups.uuid AND role_groups.deleted_at IS NULL").
-			Where("roles.deleted_at IS NULL").
-			Order("roles.created_at ASC").
-			Find(&roles).Error
+		Select("roles.uuid, roles.name, role_groups.uuid as group_id, role_groups.name AS group_name").
+		Joins("LEFT JOIN role_groups ON roles.group_id = role_groups.uuid AND role_groups.deleted_at IS NULL").
+		Where("roles.deleted_at IS NULL").
+		Order("roles.created_at ASC").
+		Find(&roles).Error
 
 	if err != nil {
 		zap.L().Error("error querying roles", zap.Error(err))
@@ -167,7 +206,7 @@ func (service *RoleService) GetRoleList() ([]responses.RoleListResponse, *dto.Ap
 	return roles, nil
 }
 
-func (service *RoleService) AddRole(req requests.AddRoleRequest) (*dto.ApiError) {
+func (service *RoleService) AddRole(req requests.AddRoleRequest) *dto.ApiError {
 	roleGroup := models.RoleGroup{}
 
 	err := service.db.Where("uuid = ?", req.RoleGroupId).First(&roleGroup).Error
@@ -182,7 +221,7 @@ func (service *RoleService) AddRole(req requests.AddRoleRequest) (*dto.ApiError)
 	}
 
 	role := models.Role{
-		Name: req.Name,
+		Name:    req.Name,
 		GroupId: req.RoleGroupId,
 	}
 
@@ -195,7 +234,7 @@ func (service *RoleService) AddRole(req requests.AddRoleRequest) (*dto.ApiError)
 	return nil
 }
 
-func (service *RoleService) UpdateRole(req requests.UpdateRoleRequest) ( *dto.ApiError) {
+func (service *RoleService) UpdateRole(req requests.UpdateRoleRequest) *dto.ApiError {
 	role := models.Role{}
 
 	err := service.db.Where("uuid = ?", req.RoleId).First(&role).Error
@@ -203,7 +242,7 @@ func (service *RoleService) UpdateRole(req requests.UpdateRoleRequest) ( *dto.Ap
 		zap.L().Warn("role not found", zap.String("uuid", req.RoleId))
 		return dto.NotFoundError(err)
 	}
-	
+
 	if err != nil {
 		zap.L().Error("error querying role", zap.Error(err))
 		return dto.InternalError(err)
@@ -225,17 +264,15 @@ func (service *RoleService) UpdateRole(req requests.UpdateRoleRequest) ( *dto.Ap
 	role.Name = req.Name
 	role.GroupId = req.RoleGroupId
 
-
 	if err = service.db.Save(&role).Error; err != nil {
 		zap.L().Error("error updating role", zap.Error(err))
-		return  dto.InternalError(err)
+		return dto.InternalError(err)
 	}
-	 
 
 	return nil
 }
 
-func (service *RoleService) DeleteRole(roleId string) (*dto.ApiError) {
+func (service *RoleService) DeleteRole(roleId string) *dto.ApiError {
 	role := models.Role{}
 
 	err := service.db.Where("uuid = ?", roleId).First(&role).Error

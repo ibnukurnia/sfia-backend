@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"sv-sfia/dto"
 	"sv-sfia/dto/requests"
 	"sv-sfia/dto/responses"
@@ -39,13 +38,12 @@ func (service TresholdService) GetTresholdList() (responses.TresholdResponse, *d
 
 	for _, treshold := range tresholds {
 		item := responses.TresholdItem{
-			Id:          treshold.Uuid.String(),
-			Name:        treshold.Name,
+			Id:           treshold.Uuid.String(),
+			Name:         treshold.Name,
 			TresholdFrom: treshold.TresholdFrom,
 			TresholdTo:   treshold.TresholdTo,
-			Color:       treshold.Color,
+			Color:        treshold.Color,
 		}
-		fmt.Print(item)
 
 		if treshold.Category == "role" {
 			results.RoleLevel = append(results.RoleLevel, item)
@@ -59,11 +57,11 @@ func (service TresholdService) GetTresholdList() (responses.TresholdResponse, *d
 
 func (service TresholdService) AddTreshold(req requests.AddTreshold) *dto.ApiError {
 	treshold := models.Treshold{
-		Name:        req.Name,
-		Category:    req.Category,
+		Name:         req.Name,
+		Category:     req.Category,
 		TresholdFrom: req.TresholdFrom,
 		TresholdTo:   req.TresholdTo,
-		Color:       req.Color,
+		Color:        req.Color,
 	}
 
 	err := service.db.Create(&treshold).Error
@@ -128,4 +126,22 @@ func (service TresholdService) DeleteTreshold(tresholdId string) *dto.ApiError {
 	}
 
 	return nil
+}
+
+func (service TresholdService) GetSkillLevelTreshold() (*responses.SkillTresholdResponse, *dto.ApiError) {
+	threshold := models.SkillLevelThreshold{}
+
+	err := service.db.Limit(1).Find(&threshold).Error
+
+	if err != nil {
+		zap.L().Error("error query treshold skill", zap.Error(err))
+
+		return nil, dto.InternalError(err)
+	}
+
+	return &responses.SkillTresholdResponse{
+		Basic:        threshold.Basic,
+		Intermediate: threshold.Intermediate,
+		Advance:      threshold.Advance,
+	}, nil
 }

@@ -81,29 +81,49 @@ func (service SkillService) FindSkillByRoleIds(participantId uuid.UUID, roleDto 
 	return res, nil
 }
 
-func (service SkillService) GetParticipantSkills(participantId uuid.UUID) ([]string, *dto.ApiError) {
-	skillIds := []uuid.UUID{}
+func (service SkillService) GetParticipantSkills(assessmentId string) ([]responses.SkillResponse, *dto.ApiError) {
+	// id, err := utils.ParseUUid(assessmentId)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	err := service.db.
-		Model(&models.ParticipantSkill{}).
-		Where("participant_id = ?", participantId).
-		Where("is_mastered = ?", true).
-		Select("skill_id").
-		Find(&skillIds).Error
+	roles := models.ParticipantRole{}
+	service.db.Where("assessment_id = ?", assessmentId).
+		Find(&roles)
 
-	if err != nil {
+	roleIds := []uuid.UUID{}
+	roleIds = append(roleIds, roles.MainRoleId)
+
+	if roles.SecondaryRole != nil {
+		roleIds = append(roleIds, *roles.SecondaryRoleId)
+	}
+	if roles.InterestRole != nil {
+		roleIds = append(roleIds, *roles.InterestRoleId)
+	}
+
+	skills := []models.RoleSkill{}
+
+	err := service.db.Distinct("skill_id").
+		Preload("Skill").
+		Where("role_id in ?", roleIds).
+		Find(&skills).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
 		zap.L().Error("error query participant skills", zap.Error(err))
 
 		return nil, dto.InternalError(err)
 	}
 
-	results := []string{}
+	res := []responses.SkillResponse{}
 
-	for _, skill := range skillIds {
-		results = append(results, skill.String())
+	for _, skill := range skills {
+		res = append(res, responses.SkillResponse{
+			Id:    skill.SkillId.String(),
+			Skill: skill.Skill.Name,
+		})
 	}
 
-	return results, nil
+	return res, nil
 }
 
 func (service SkillService) GetSkillsetList() ([]responses.SkillsetResponse, *dto.ApiError) {

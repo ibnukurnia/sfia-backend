@@ -30,6 +30,7 @@ func (provider *HandlerProvider) Assesment() *assessmentHandler {
 		sfiaService:       provider.serviceProvider.SfiaService,
 		skillService:      provider.serviceProvider.SkillService,
 		dujService:        provider.serviceProvider.DujService,
+		toolService:       provider.serviceProvider.ToolService,
 	}
 }
 
@@ -46,6 +47,7 @@ func (provider *HandlerProvider) Participant() *participantHandler {
 func (provider *HandlerProvider) Skill() *skillHandler {
 	return &skillHandler{
 		skillService: provider.serviceProvider.SkillService,
+		roleSevice:   provider.serviceProvider.RoleService,
 	}
 }
 
@@ -88,5 +90,10 @@ func (provider *HandlerProvider) TrainingMaster() *trainingMasterHandler {
 func (provider *HandlerProvider) Tools() *toolsHandler {
 	return &toolsHandler{
 		toolsService: provider.serviceProvider.ToolsMasterServices,
+	}
+}
+func (provider *HandlerProvider) Tool() *toolHandler {
+	return &toolHandler{
+		toolService: provider.serviceProvider.ToolService,
 	}
 }

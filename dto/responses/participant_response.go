@@ -16,8 +16,9 @@ type ParticipantRegistrationStatusResponse struct {
 }
 
 type ParticipantToolResponse struct {
-	Tool  string `json:"tool"`
-	Level string `json:"level"`
+	Tool     string `json:"tool"`
+	Level    string `json:"level"`
+	Evidence string `json:"evidence"`
 }
 
 type ParticipantTraingResponse struct {
@@ -25,6 +26,7 @@ type ParticipantTraingResponse struct {
 }
 
 type RoleTrainingResponse struct {
+	Id        string             `json:"id"`
 	Name      string             `json:"name"`
 	Trainings []TrainingResponse `json:"trainings"`
 }

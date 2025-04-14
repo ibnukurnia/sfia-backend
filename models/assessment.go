@@ -4,12 +4,24 @@ import "github.com/google/uuid"
 
 type AssessmentStatus string
 
-const SFIA AssessmentStatus = "SFIA"
-const DUJ AssessmentStatus = "DUJ"
-const TOOL AssessmentStatus = "TOOL"
+const (
+	NEW           AssessmentStatus = "NEW"
+	SFIA          AssessmentStatus = "SFIA"
+	DUJ           AssessmentStatus = "DUJ"
+	TOOL          AssessmentStatus = "TOOL"
+	UPDATETRANING AssessmentStatus = "UPDATE_TRAINING"
+	TRANING       AssessmentStatus = "TRAINING"
+	DONE          AssessmentStatus = "DONE"
+)
 
 type Assessment struct {
 	Base
-	ParticipantId uuid.UUID
-	Year          uint16
+	ParticipantId         uuid.UUID
+	Year                  uint16
+	Status                AssessmentStatus
+	Participant           Participant
+	ParticipantSkills     []ParticipantSkill
+	ParticipantRole       ParticipantRole
+	ParticipantDepartment ParticipantDepartment
+	SfiaResults           []SfiaResult
 }

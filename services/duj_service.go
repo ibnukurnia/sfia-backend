@@ -22,19 +22,11 @@ func newDujService(db *gorm.DB) *DujService {
 	}
 }
 
-func (service DujService) GetParticipantDuj(participantId uuid.UUID) (responses.DujAssessmentResponse, *dto.ApiError) {
-	answers := []models.DujAnswer{}
-
-	isExist := service.db.Where("participant_id = ?", participantId).
-		Find(&answers).RowsAffected > 0
-
-	if isExist {
-		return responses.NewDujAssessmentResponseCurrentAnswer(answers), nil
-	}
+func (service DujService) GetParticipantDuj(participantId uuid.UUID, assessmentId uuid.UUID) (responses.DujAssessmentResponse, *dto.ApiError) {
 
 	participantDepartment := models.ParticipantDepartment{}
 
-	err := service.db.Where("participant_id = ?", participantId).
+	err := service.db.Where("assessment_id = ?", assessmentId).
 		Find(&participantDepartment).Error
 
 	if err != nil {
@@ -75,33 +67,49 @@ func (service DujService) GetParticipantDuj(participantId uuid.UUID) (responses.
 	return responses.NewDujAssessmentResponse(dujs), nil
 }
 
-func (service DujService) StoreParticipantDuj(participantId uuid.UUID, req requests.DujAssessmentRequest) {
+func (service DujService) StoreParticipantDuj(participantId, assessmentId uuid.UUID, req requests.DujAssessmentRequest) *dto.ApiError {
 	answers := []models.DujAnswer{}
 
 	for _, job := range req.Jobs {
+		jobId, err := utils.ParseUUid(job.Id)
+		if err != nil {
+			return err
+		}
 
 		answer := models.DujAnswer{
 			ParticipantId: participantId,
-			Job:           job.Name,
-			Detail:        "",
+			AssessmentId:  assessmentId,
+			JobId:         jobId,
 			CurrentJob:    job.CurrentJob,
 			HaveTrouble:   job.HaveTrouble,
 			TroubleCause:  job.TroubleCause,
 		}
 
-		if job.Id != nil {
-			id, _ := utils.ParseUUid(*job.Id)
-
-			service.db.Model(&models.DujAnswer{}).Where("uuid = ?", id).
-				Updates(&answer)
-
-			continue
-		}
-
 		answers = append(answers, answer)
 	}
 
+	tx := service.db.Begin()
+
 	if len(answers) > 0 {
-		service.db.Create(&answers)
+		if err := tx.Create(&answers).Error; err != nil {
+			tx.Rollback()
+
+			zap.L().Error("error save duj answers: ", zap.Error(err))
+
+			return dto.InternalError(err)
+		}
+
+		if err := tx.Model(models.Assessment{}).Where("uuid = ?", assessmentId).
+			Update("status", models.TOOL).Error; err != nil {
+			tx.Rollback()
+
+			zap.L().Error("error save duj answers: ", zap.Error(err))
+
+			return dto.InternalError(err)
+		}
 	}
+
+	tx.Commit()
+
+	return nil
 }

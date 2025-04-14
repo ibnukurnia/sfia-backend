@@ -24,8 +24,14 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	userAdminHandlers := handlers.UserAdmin()
 	trainigMasterHandlers := handlers.TrainingMaster()
 	toolMasterHandlers := handlers.Tools()
+	toolHandler := handlers.Tool()
 
 	v1 := e.Group("api/v1")
+
+	v1.GET("treshold", tresholdHandlers.GetSkillLevelTreshold)
+
+	// tools
+	v1.GET("tools", toolHandler.GetTools)
 
 	// roles
 	v1.GET("roles", roleHandlers.GetRoles)
@@ -39,13 +45,15 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 
 	authEp := v1.Group("auth")
 	{
-		authEp.POST("participant/sign-up", participantHandlers.Register)
-		authEp.POST("participant/sign-in", participantHandlers.Login)
+		authEp.POST("sign-up", participantHandlers.Register)
+		authEp.POST("sign-in", participantHandlers.Login)
 	}
 
-	v1.GET("skills", skillHandlers.GetSkills)
+	// v1.GET("skills", skillHandlers.GetSkills)
+	v1.GET("roles/skills", skillHandlers.GetSkills)
 
 	v1.Use(middleware.AssessmentJWT(services.ParticipantService.GetByParticipantId))
+
 	v1.GET("participant/profile", participantHandlers.Profile)
 	v1.POST("onboarding/general-information", participantHandlers.StorePersonalInformation)
 	v1.POST("onboarding/role", participantHandlers.CreateParticipantRole)
@@ -61,19 +69,27 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 
 	assessmentsEp := v1.Group("assessments")
 	{
-		assessmentsEp.POST("new", assessmentHandlers.CreateNewAssessment)
+		assessmentsEp.POST("", assessmentHandlers.CreateNewAssessment)
+		assessmentsEp.GET("", assessmentHandlers.ListAssessment)
+		assessmentsEp.GET(":id/status", assessmentHandlers.AssessmentStatus)
+		assessmentsEp.GET(":id/results", assessmentHandlers.SfiaResult)
+		assessmentsEp.GET(":id/resume", assessmentHandlers.Resume)
+		assessmentsEp.GET(":id/tools", assessmentHandlers.GetToolAssessment)
 
 		assessmentsEp.GET("self-assessment", assessmentHandlers.GetSelfAssessments)
-		assessmentsEp.POST("self-assessment", assessmentHandlers.SaveSelfAssessmentAnswer)
+		assessmentsEp.POST(":id/self-assessment", assessmentHandlers.SaveSelfAssessmentAnswer)
 
-		assessmentsEp.GET("duj", assessmentHandlers.GetDujAssesments)
-		assessmentsEp.POST("duj", assessmentHandlers.SaveDujAnswer)
+		assessmentsEp.GET(":id/duj", assessmentHandlers.GetDujAssesments)
+		assessmentsEp.POST(":id/duj", assessmentHandlers.SaveDujAnswer)
 
 		assessmentsEp.GET("tool", assessmentHandlers.GetToolAssessment)
-		assessmentsEp.POST("tool", assessmentHandlers.SaveToolAssessmentAnswers)
+		assessmentsEp.POST(":id/tools", assessmentHandlers.SaveToolAssessmentAnswers)
 
 		assessmentsEp.GET("trainings", participantHandlers.GetParticipantRoleTraining)
-		assessmentsEp.POST("trainings", participantHandlers.CreateParticipantTraining)
+		assessmentsEp.POST(":id/trainings", participantHandlers.CreateParticipantTraining)
+
+		assessmentsEp.POST(":id/updated-training", participantHandlers.CreateParticipantUpdatedTraining)
+
 	}
 
 	backOffice := v1.Group("backoffice")

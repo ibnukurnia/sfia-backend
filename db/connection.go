@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,7 +29,9 @@ func ConnectDb() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if os.Getenv("APP_DEBUG") == "TRUE" {
+	isDebug, _ := strconv.ParseBool(os.Getenv("APP_DEBUG"))
+
+	if isDebug {
 		db = db.Debug()
 	}
 

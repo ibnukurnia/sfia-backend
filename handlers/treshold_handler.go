@@ -69,3 +69,14 @@ func (handler *tresholdHandler) DeleteTreshold(ctx *gin.Context) {
 
 	responses.WriteApiResponse(ctx, nil, "success delete treshold", 200)
 }
+
+func (handler tresholdHandler) GetSkillLevelTreshold(ctx *gin.Context) {
+	treshold, err := handler.tresholdService.GetSkillLevelTreshold()
+
+	if err != nil {
+		responses.ResponseError(ctx, err)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, treshold, "success get treshold skills", 200)
+}

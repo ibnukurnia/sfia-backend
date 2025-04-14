@@ -1,13 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
 ALTER TABLE participant_trainings
-RENAME COLUMN need_sertification TO need_certification;
+ADD COLUMN IF NOT EXISTS assessment_id UUID;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DELETE FROM participant_trainings;
-
 ALTER TABLE participant_trainings
-RENAME COLUMN need_certification TO need_sertification;
+DROP COLUMN IF EXISTS assessment_id;
 -- +goose StatementEnd

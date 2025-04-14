@@ -148,7 +148,13 @@ func (handler participantHandler) CreateParticipantTool(ctx *gin.Context) {
 
 	participantId := utils.GetUserIdFromContext(ctx)
 
-	apiErr := handler.toolService.CreateParticipantTool(participantId, request)
+	assessmentId, apiErr := utils.ParseUUid(ctx.Param("id"))
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	apiErr = handler.toolService.CreateParticipantTool(participantId, assessmentId, request)
 
 	if apiErr != nil {
 		responses.ResponseError(ctx, apiErr)
@@ -191,8 +197,35 @@ func (handler participantHandler) CreateParticipantTraining(ctx *gin.Context) {
 	}
 
 	participantId := utils.GetUserIdFromContext(ctx)
+	assessmentId, apiErr := utils.ParseUUid(ctx.Param("id"))
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
 
-	apiErr := handler.trainingService.CreateParticipantTraining(participantId, request)
+	apiErr = handler.trainingService.CreateParticipantTraining(participantId, assessmentId, request)
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, nil, "success storing trainings", 201)
+}
+
+func (handler participantHandler) CreateParticipantUpdatedTraining(ctx *gin.Context) {
+	request := requests.CreateParticipantUpdatedTrainingRequest{}
+
+	if !requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
+	assessmentId, apiErr := utils.ParseUUid(ctx.Param("id"))
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	apiErr = handler.trainingService.CreateParticipantUpdatedTraining(assessmentId, request)
 	if apiErr != nil {
 		responses.ResponseError(ctx, apiErr)
 		return

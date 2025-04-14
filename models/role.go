@@ -1,6 +1,37 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
+
+type (
+	SkillLevel string
+	RoleLevel  string
+)
+
+func (e SkillLevel) Int() int {
+	if e == BASIC {
+		return 1
+	}
+
+	if e == INTERMEDIATE {
+		return 2
+	}
+
+	return 3
+
+}
+
+const (
+	BASIC        SkillLevel = "basic"
+	INTERMEDIATE SkillLevel = "intermediate"
+	ADVANCE      SkillLevel = "advance"
+
+	NOLEVEL RoleLevel = "not qualified"
+	JUNIOR  RoleLevel = "junior"
+	MIDDLE  RoleLevel = "middle"
+	SENIOR  RoleLevel = "senior"
+)
 
 type Role struct {
 	Base
@@ -22,8 +53,10 @@ type Skill struct {
 
 type RoleSkill struct {
 	Base
-	RoleId  uuid.UUID
-	Role    Role
-	SkillId uuid.UUID
-	Skill   Skill
+	RoleId                                                           uuid.UUID
+	Role                                                             Role
+	SkillId                                                          uuid.UUID
+	IsMandatoryForJunior, IsMandatoryForMiddle, IsMandatoryForSenior bool
+	RequirementForJunior, RequirementForMiddle, RequirementForSenior SkillLevel
+	Skill                                                            Skill
 }

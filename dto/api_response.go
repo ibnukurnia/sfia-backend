@@ -45,6 +45,14 @@ func NotFoundError(err error) *ApiError {
 	}
 }
 
+func NotFoundErrorWithMsg(err error, message string) *ApiError {
+	return &ApiError{
+		Typ:          ErrorNotFound,
+		Err:          err,
+		ErrorMessage: message,
+	}
+}
+
 func BadRequestError(err error) *ApiError {
 	return &ApiError{
 		Typ:          ErrorBadData,

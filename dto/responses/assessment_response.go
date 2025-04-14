@@ -91,7 +91,7 @@ func NewToolAssessmentResponse(tools []models.ParticipantTool) ToolAssessmentRes
 	for _, tool := range tools {
 		toolResponse = append(toolResponse, toolAssessment{
 			Id:    tool.Uuid.String(),
-			Name:  tool.Tool,
+			Name:  tool.Name,
 			Level: tool.Level,
 		})
 	}
@@ -110,7 +110,7 @@ func NewDujAssessmentResponse(m []models.Duj) DujAssessmentResponse {
 
 	for _, v := range m {
 		jobs = append(jobs, job{
-			// Id:     v.Uuid.String(),
+			Id:     v.Uuid.String(),
 			Detail: v.Detail,
 		})
 	}
@@ -126,7 +126,6 @@ func NewDujAssessmentResponseCurrentAnswer(m []models.DujAnswer) DujAssessmentRe
 	for _, v := range m {
 		jobs = append(jobs, job{
 			Id:           v.Uuid.String(),
-			Detail:       v.Job,
 			CurrentJob:   &v.CurrentJob,
 			HaveTrouble:  &v.HaveTrouble,
 			TroubleCause: v.TroubleCause,
@@ -147,5 +146,59 @@ type job struct {
 }
 
 type AssessmentResponse struct {
-	Id string `json:"id"`
+	Id     string                  `json:"id"`
+	Status models.AssessmentStatus `json:"status"`
+}
+
+type ListAssessmentResponse struct {
+	Id     string                  `json:"id"`
+	Year   uint16                  `json:"year"`
+	Status models.AssessmentStatus `json:"status"`
+}
+
+type AssessmentResumeResponse struct {
+	GeneralInformation GeneralInformationResume `json:"general_information"`
+	RoleInformation    RoleInformationResume    `json:"role_information"`
+	SkillResults       []SkillResult            `json:"skill_results"`
+}
+
+type GeneralInformationResume struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Pn             string `json:"pn"`
+	Department     string `json:"department"`
+	DepartmentUnit string `json:"department_unit"`
+	DepartmentTeam string `json:"department_team"`
+}
+
+type RoleInformationResume struct {
+	MainRole      RoleResume  `json:"main_role"`
+	SecondaryRole *RoleResume `json:"secondary_role"`
+	InterestRole  *RoleResume `json:"interest_role"`
+}
+
+type RoleResume struct {
+	Name  string           `json:"name"`
+	Group string           `json:"group"`
+	Level models.RoleLevel `json:"level"`
+}
+
+type SkillResult struct {
+	Code  string            `json:"code"`
+	Score float32           `json:"score"`
+	Level models.SkillLevel `json:"level"`
+	Name  string            `json:"name"`
+}
+
+type SfiaRoleResult struct {
+	Name   string           `json:"name"`
+	Group  string           `json:"group"`
+	Skills []SkillResult    `json:"skills"`
+	Level  models.RoleLevel `json:"level"`
+}
+
+type SfiaRoleResultResponse struct {
+	MainRole      SfiaRoleResult  `json:"main_role"`
+	SecondaryRole *SfiaRoleResult `json:"secondary_role"`
+	InterestRole  *SfiaRoleResult `json:"interest_role"`
 }

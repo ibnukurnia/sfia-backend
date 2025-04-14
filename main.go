@@ -10,11 +10,12 @@ import (
 	"sv-sfia/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gookit/goutil/dump"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func initZapLogger() *zap.Logger {
@@ -45,12 +46,12 @@ func main() {
 		logger.Fatal("Failed to connect database: ", zap.Error(err))
 	}
 
-	
 	host := fmt.Sprintf("%s:%s", os.Getenv("MINIO_IP"), os.Getenv("MINIO_PORT_API"))
+	dump.P(host)
 
 	minioClient, err := minio.New(host, &minio.Options{
 		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY"), os.Getenv("MINIO_SECRET_KEY"), ""),
-		Secure: false, 
+		Secure: false,
 	})
 
 	if err != nil {
