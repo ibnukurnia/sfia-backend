@@ -25,6 +25,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	trainigMasterHandlers := handlers.TrainingMaster()
 	toolMasterHandlers := handlers.Tools()
 	toolHandler := handlers.Tool()
+	managementTalentHandler := handlers.ManagementTalent()
 
 	v1 := e.Group("api/v1")
 
@@ -155,6 +156,17 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.POST("tools", toolMasterHandlers.AddTool)
 		backOffice.PUT("tools", toolMasterHandlers.UpdateTools)
 		backOffice.DELETE("tools/:id", toolMasterHandlers.DeleteTools)
+	}
+	management := v1.Group("/management")
+	managementTalent := management.Group("/talent")
+	{
+		managementTalent.POST("/status", managementTalentHandler.GetStatusTalent)
+		managementTalent.POST("/departemen", managementTalentHandler.GetDepartmentTalent)
+		managementTalent.POST("/fungsi", managementTalentHandler.GetFunctionTalent)
+		managementTalent.POST("/team", managementTalentHandler.GetTeamTalent)
+		managementTalent.POST("/corporate-title", managementTalentHandler.GetCorporateTalent)
+		managementTalent.POST("/spesialisasi", managementTalentHandler.GetSpecializationTalent)
+		managementTalent.POST("/tahun-pengalaman", managementTalentHandler.GetYearOfExperienceTalent)
 	}
 
 }

@@ -97,3 +97,7 @@ func (provider *HandlerProvider) Tool() *toolHandler {
 		toolService: provider.serviceProvider.ToolService,
 	}
 }
+
+func (provider *HandlerProvider) ManagementTalent() *ManagementTalentHandler {
+	return &ManagementTalentHandler{}
+}
