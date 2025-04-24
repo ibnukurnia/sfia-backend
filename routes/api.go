@@ -26,6 +26,8 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	toolMasterHandlers := handlers.Tools()
 	toolHandler := handlers.Tool()
 	managementTalentHandler := handlers.ManagementTalent()
+	managementResumeHandler := handlers.ManagementResume()
+	managementAplikasiHandler := handlers.ManagementAplikasi()
 
 	v1 := e.Group("api/v1")
 
@@ -158,8 +160,8 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.DELETE("tools/:id", toolMasterHandlers.DeleteTools)
 	}
 	management := v1.Group("/management")
-	managementTalent := management.Group("/talent")
 	{
+		managementTalent := management.Group("/talent")
 		managementTalent.POST("/status", managementTalentHandler.GetStatusTalent)
 		managementTalent.POST("/departemen", managementTalentHandler.GetDepartmentTalent)
 		managementTalent.POST("/fungsi", managementTalentHandler.GetFunctionTalent)
@@ -167,6 +169,14 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		managementTalent.POST("/corporate-title", managementTalentHandler.GetCorporateTalent)
 		managementTalent.POST("/spesialisasi", managementTalentHandler.GetSpecializationTalent)
 		managementTalent.POST("/tahun-pengalaman", managementTalentHandler.GetYearOfExperienceTalent)
-	}
+
+		managementResume := management.Group("/resume")
+		managementResume.POST("/role-data", managementResumeHandler.GetRoleDataManagement)
+		managementResume.POST("/skill-role-data", managementResumeHandler.GetRoleDataManagement)
+		managementResume.POST("/duj", managementResumeHandler.GetRoleDataManagement)
+
+		managementAplikasi := management.Group("/aplikasi")
+		managementAplikasi.POST("/", managementAplikasiHandler.GetManagementAplikasi)
+
 
 }

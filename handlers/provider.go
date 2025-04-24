@@ -1,6 +1,9 @@
 package handlers
 
-import "sv-sfia/services"
+import (
+	"sv-sfia/handlers/management"
+	"sv-sfia/services"
+)
 
 type HandlerProvider struct {
 	serviceProvider *services.ServiceProvider
@@ -98,6 +101,14 @@ func (provider *HandlerProvider) Tool() *toolHandler {
 	}
 }
 
-func (provider *HandlerProvider) ManagementTalent() *ManagementTalentHandler {
-	return &ManagementTalentHandler{}
+func (provider *HandlerProvider) ManagementTalent() *management.ManagementTalentHandler {
+	return &management.ManagementTalentHandler{}
+}
+
+func (provider *HandlerProvider) ManagementResume() *management.ManagementResumeHandler {
+	return &management.ManagementResumeHandler{}
+}
+
+func (provider *HandlerProvider) ManagementAplikasi() *management.ManagementAplikasiHandler {
+	return &management.ManagementAplikasiHandler{}
 }
