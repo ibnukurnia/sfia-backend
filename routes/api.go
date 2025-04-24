@@ -28,6 +28,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	managementTalentHandler := handlers.ManagementTalent()
 	managementResumeHandler := handlers.ManagementResume()
 	managementAplikasiHandler := handlers.ManagementAplikasi()
+	managementUseCaseHandler := handlers.ManagementUseCase()
 
 	v1 := e.Group("api/v1")
 
@@ -178,5 +179,21 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		managementAplikasi := management.Group("/aplikasi")
 		managementAplikasi.POST("/", managementAplikasiHandler.GetManagementAplikasi)
 
+		managementUseCase := management.Group("/usecase")
+		managementUseCase.POST("/persebaran-tipe-role", managementUseCaseHandler.GetPersebaranTipeRole)
+		managementUseCase.POST("/persebaran-level-role", managementUseCaseHandler.GetPersebaranLevelRole)
+		managementUseCase.POST("/persebaran-skill-penguasaan", managementUseCaseHandler.GetPersebaranSkill)
+		managementUseCase.POST("/relevansi-tahun-level/chart", managementUseCaseHandler.GetRelevansiTahunChart)
+		managementUseCase.POST("/relevansi-tahun-level/table", managementUseCaseHandler.GetRelevansiTahunTables)
+		managementUseCase.POST("/tidak-menguasai-skill-utama/chart", managementUseCaseHandler.GetUnMasteredSkillChart)
+		managementUseCase.POST("/tidak-menguasai-skill-utama/table", managementUseCaseHandler.GetUnMasteredSkillTable)
+		managementUseCase.POST("/pemetaan-tahun-level/level-role", managementUseCaseHandler.GetYearLevelRoleMapping)
+		managementUseCase.POST("/pemetaan-tahun-level/persebaran", managementUseCaseHandler.GetYearLevelRoleDistribution)
+		managementUseCase.POST("/pemetaan-tahun-level/table", managementUseCaseHandler.GetSkillRequirement)
+		managementUseCase.POST("/rekomendasi-cross-role/chart", managementUseCaseHandler.GetCrossRoleChartRecommendation)
+		managementUseCase.POST("/rekomendasi-cross-role/table", managementUseCaseHandler.GetCrossRoleTableRecommendation)
+		managementUseCase.POST("/rekomendasi-cross-skill/chart", managementUseCaseHandler.GetCrossSkillChartRecommendation)
+		managementUseCase.POST("/rekomendasi-cross-skill/table", managementUseCaseHandler.GetCrossSkillTableRecommendation)
 
+	}
 }

@@ -112,3 +112,7 @@ func (provider *HandlerProvider) ManagementResume() *management.ManagementResume
 func (provider *HandlerProvider) ManagementAplikasi() *management.ManagementAplikasiHandler {
 	return &management.ManagementAplikasiHandler{}
 }
+
+func (provider *HandlerProvider) ManagementUseCase() *management.ManagementUseCaseHandler {
+	return &management.ManagementUseCaseHandler{}
+}
