@@ -116,3 +116,7 @@ func (provider *HandlerProvider) ManagementAplikasi() *management.ManagementApli
 func (provider *HandlerProvider) ManagementUseCase() *management.ManagementUseCaseHandler {
 	return &management.ManagementUseCaseHandler{}
 }
+
+func (provider *HandlerProvider) ManagemenRoleAndSkill() *management.RoleAndSkillManagement {
+	return &management.RoleAndSkillManagement{}
+}

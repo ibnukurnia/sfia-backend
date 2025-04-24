@@ -29,6 +29,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	managementResumeHandler := handlers.ManagementResume()
 	managementAplikasiHandler := handlers.ManagementAplikasi()
 	managementUseCaseHandler := handlers.ManagementUseCase()
+	managementRoleAndSkillHandler := handlers.ManagemenRoleAndSkill()
 
 	v1 := e.Group("api/v1")
 
@@ -195,5 +196,9 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		managementUseCase.POST("/rekomendasi-cross-skill/chart", managementUseCaseHandler.GetCrossSkillChartRecommendation)
 		managementUseCase.POST("/rekomendasi-cross-skill/table", managementUseCaseHandler.GetCrossSkillTableRecommendation)
 
+		managementRoleAndSkill := management.Group("/role-and-skill")
+		managementRoleAndSkill.POST("/chart-data", managementRoleAndSkillHandler.GetChartData)
+		managementRoleAndSkill.POST("/komposisi-data", managementRoleAndSkillHandler.GetCountKomposisiData)
+		managementRoleAndSkill.POST("/sample-data", managementRoleAndSkillHandler.GetSampleData)
 	}
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"os"
 	"strconv"
 	"sv-sfia/db"
@@ -12,8 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/goutil/dump"
 	"github.com/joho/godotenv"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
