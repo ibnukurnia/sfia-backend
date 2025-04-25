@@ -11,6 +11,7 @@ type SelfAssessmentAnswer struct {
 	SkillId       uuid.UUID
 	Value         int8
 	Evidence      string
+	UserId        uuid.UUID
 	// Question      SfiaQuestion `gorm:"foreignKey:QuestionId"`
 }
 

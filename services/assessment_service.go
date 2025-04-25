@@ -291,18 +291,20 @@ func (service AssessmentService) GetSelfAssessment(participantId uuid.UUID) resp
 	return responses.NewSfiaResponse(skills, answers)
 }
 
-func (service AssessmentService) StoreSelfAssessment(assessmentId string, req requests.SelfAssessmentRequest) *dto.ApiError {
+func (service AssessmentService) StoreSelfAssessment(participantId uuid.UUID, req requests.SelfAssessmentRequest) *dto.ApiError {
 	answers := []models.SelfAssessmentAnswer{}
 
-	assessmentUuid, err := utils.ParseUUid(assessmentId)
-	if err != nil {
-		return err
-	}
+	// assessmentUuid, err := utils.ParseUUid()
+	// if err != nil {
+	// 	return err
+	// }
 
-	assessment, err := service.GetAssessmentById(assessmentUuid)
-	if err != nil {
-		return err
-	}
+	assessment := models.Assessment{}
+
+	// assessment, err := service.GetAssessmentById(assessmentUuid)
+	// if err != nil {
+	// 	return err
+	// }
 
 	for _, answer := range req.Answers {
 		questionId, err := utils.ParseUUid(answer.QuestionId)
@@ -310,15 +312,28 @@ func (service AssessmentService) StoreSelfAssessment(assessmentId string, req re
 			return err
 		}
 
+		roleId, err := utils.ParseUUid(answer.RoleId)
+		if err != nil {
+			return err
+		}
+
+		skillId, err := utils.ParseUUid(answer.SkillId)
+		if err != nil {
+			return err
+		}
+
 		answers = append(answers, models.SelfAssessmentAnswer{
-			QuestionId:   questionId,
-			Value:        answer.Value,
-			Evidence:     answer.Evidence,
-			AssessmentId: assessment.Uuid,
+			ParticipantId: participantId,
+			QuestionId:    questionId,
+			Value:         answer.Value,
+			Evidence:      answer.Evidence,
+			RoleId:        roleId,
+			SkillId:       skillId,
+			// AssessmentId:  assessment.Uuid,
 		})
 	}
 
-	assessment.Status = models.DUJ
+	// assessment.Status = models.DUJ
 
 	tx := service.db.Begin()
 
@@ -616,35 +631,87 @@ func (service AssessmentService) SfiaResult(assessementId uuid.UUID) (*responses
 	secondaryRoleResults := service.skillResult(assessment.ParticipantRole.SecondaryRoleSkills, assessment.SfiaResults)
 	interestRoleResults := service.skillResult(assessment.ParticipantRole.InterestRoleSkills, assessment.SfiaResults)
 
+	mainRoleLevel := service.roleLevelResult(assessment.ParticipantRole.MainRoleId, skillIds, mainRoleResults)
+	nextRoleLevel := mainRoleLevel.NextLevel()
+	mainRoleRequiredNext := service.getRequiredNextLevelSkills(*nextRoleLevel, assessment.ParticipantRole.MainRoleId, skillIds)
+
 	res := responses.SfiaRoleResultResponse{
 		MainRole: responses.SfiaRoleResult{
-			Skills: mainRoleResults,
-			Name:   assessment.ParticipantRole.MainRole.Name,
-			Group:  assessment.ParticipantRole.MainRole.Group.Name,
-			Level:  service.roleLevelResult(assessment.ParticipantRole.MainRoleId, skillIds, mainRoleResults),
+			Skills:         mainRoleResults,
+			Name:           assessment.ParticipantRole.MainRole.Name,
+			Group:          assessment.ParticipantRole.MainRole.Group.Name,
+			Level:          mainRoleLevel,
+			NextLevel:      nextRoleLevel,
+			RequiredSkills: mainRoleRequiredNext,
 		},
 	}
 
 	if assessment.ParticipantRole.SecondaryRole != nil {
+		secondaryRoleLevel := service.roleLevelResult(*assessment.ParticipantRole.SecondaryRoleId, skillIds, secondaryRoleResults)
+		nextSecondaryRoleLevel := secondaryRoleLevel.NextLevel()
+		secondaryRoleRequiredNext := service.getRequiredNextLevelSkills(*nextSecondaryRoleLevel, *assessment.ParticipantRole.SecondaryRoleId, skillIds)
+
 		secondaryRole := responses.SfiaRoleResult{
-			Skills: secondaryRoleResults,
-			Name:   assessment.ParticipantRole.SecondaryRole.Name,
-			Group:  assessment.ParticipantRole.SecondaryRole.Group.Name,
-			Level:  service.roleLevelResult(*assessment.ParticipantRole.SecondaryRoleId, skillIds, secondaryRoleResults),
+			Skills:         secondaryRoleResults,
+			Name:           assessment.ParticipantRole.SecondaryRole.Name,
+			Group:          assessment.ParticipantRole.SecondaryRole.Group.Name,
+			Level:          secondaryRoleLevel,
+			NextLevel:      nextSecondaryRoleLevel,
+			RequiredSkills: secondaryRoleRequiredNext,
 		}
 
 		res.SecondaryRole = &secondaryRole
 	}
 
 	if assessment.ParticipantRole.InterestRole != nil {
+		interestRoleLevel := service.roleLevelResult(*assessment.ParticipantRole.InterestRoleId, skillIds, interestRoleResults)
+		nextInterestRoleLevel := interestRoleLevel.NextLevel()
+		interestRoleRequiredNext := service.getRequiredNextLevelSkills(*nextInterestRoleLevel, *assessment.ParticipantRole.InterestRoleId, skillIds)
+
 		interestRole := responses.SfiaRoleResult{
-			Skills: interestRoleResults,
-			Name:   assessment.ParticipantRole.InterestRole.Name,
-			Group:  assessment.ParticipantRole.InterestRole.Group.Name,
-			Level:  service.roleLevelResult(*assessment.ParticipantRole.InterestRoleId, skillIds, interestRoleResults),
+			Skills:         interestRoleResults,
+			Name:           assessment.ParticipantRole.InterestRole.Name,
+			Group:          assessment.ParticipantRole.InterestRole.Group.Name,
+			Level:          interestRoleLevel,
+			NextLevel:      nextInterestRoleLevel,
+			RequiredSkills: interestRoleRequiredNext,
 		}
 
 		res.InterestRole = &interestRole
+	}
+
+	return &res, nil
+}
+
+func (service AssessmentService) Trainings(assessmentId uuid.UUID) (*responses.ParticipantTrainingResponse, *dto.ApiError) {
+	trainingNeeds := []models.ParticipantTraining{}
+	updatedTrainings := []models.UpdatedTraining{}
+
+	service.db.Where("assessment_id = ?", assessmentId).Find(&trainingNeeds)
+
+	service.db.Where("assessment_id = ?", assessmentId).Find(&updatedTrainings)
+
+	res := responses.ParticipantTrainingResponse{}
+
+	for _, training := range trainingNeeds {
+		res.NeededTrainings = append(res.NeededTrainings, responses.NeededTraining{
+			Name:     training.Name,
+			Priority: training.Priority,
+		})
+	}
+
+	for _, training := range updatedTrainings {
+		res.DoneTrainings = append(res.DoneTrainings, responses.DoneTraining{
+			Id:               training.Uuid.String(),
+			Name:             training.Name,
+			StartDate:        training.StartDate,
+			EndDate:          training.EndDate,
+			Location:         training.Location,
+			Implementation:   training.Implementation,
+			Provider:         training.Provider,
+			HasCertification: training.HasCertification,
+			GetSertification: training.GetCertification,
+		})
 	}
 
 	return &res, nil
@@ -703,6 +770,104 @@ func (service AssessmentService) roleLevelResult(roleId uuid.UUID, skillIds []uu
 	}
 
 	return level
+}
+
+func (service AssessmentService) getRequiredNextLevelSkills(nextLevel models.RoleLevel, roleId uuid.UUID, skillIds []uuid.UUID) []responses.RequiredSkill {
+	q := service.db.Preload("Skill")
+
+	switch nextLevel {
+	case models.MIDDLE:
+		q = q.Where("is_mandatory_for_middle = ?", true)
+	case models.SENIOR:
+		q = q.Where("is_mandatory_for_senior = ?", true)
+	}
+
+	skills := []models.RoleSkill{}
+
+	q.Where("role_id = ?", roleId).
+		Where("skill_id not in ?", skillIds).
+		Find(&skills)
+
+	requiredSkills := []responses.RequiredSkill{}
+
+	for _, skill := range skills {
+		requiredSkills = append(requiredSkills, responses.RequiredSkill{
+			Name:   skill.Skill.Name,
+			Junior: &skill.RequirementForJunior,
+			Middle: &skill.RequirementForMiddle,
+			Senior: &skill.RequirementForSenior,
+		})
+	}
+
+	return requiredSkills
+}
+
+func (service AssessmentService) StoreSfia(userId uuid.UUID, req requests.SelfAssessmentRequest) *dto.ApiError {
+	answers := []models.SelfAssessmentAnswer{}
+
+	for _, answer := range req.Answers {
+		questionId, err := utils.ParseUUid(answer.QuestionId)
+		if err != nil {
+			return err
+		}
+
+		roleId, err := utils.ParseUUid(answer.RoleId)
+		if err != nil {
+			return err
+		}
+
+		skillId, err := utils.ParseUUid(answer.SkillId)
+		if err != nil {
+			return err
+		}
+
+		if answer.AnswerId != nil {
+			answerId, err := utils.ParseUUid(*answer.AnswerId)
+
+			if err != nil {
+				return err
+			}
+
+			errUpdt := service.db.Model(&models.SelfAssessmentAnswer{}).
+				Where("uuid = ?", answerId).Updates(models.SelfAssessmentAnswer{
+				Value:    answer.Value,
+				Evidence: answer.Evidence,
+			}).Error
+
+			if errUpdt != nil {
+				return dto.InternalError(errUpdt)
+			}
+
+			continue
+		}
+
+		answers = append(answers, models.SelfAssessmentAnswer{
+			UserId:     userId,
+			QuestionId: questionId,
+			Value:      answer.Value,
+			Evidence:   answer.Evidence,
+			RoleId:     roleId,
+			SkillId:    skillId,
+			// AssessmentId:  assessment.Uuid,
+		})
+	}
+
+	tx := service.db.Begin()
+
+	if len(answers) > 0 {
+		err := tx.Create(&answers).Error
+
+		if err != nil {
+			tx.Rollback()
+
+			zap.L().Error("error save sfia answer: ", zap.Error(err))
+
+			return dto.InternalError(err)
+		}
+
+	}
+
+	return nil
 }
 
 type LevelChecker struct {

@@ -12,4 +12,7 @@ type ParticipantDepartment struct {
 	Department       Department     `gorm:"foreignKey:DepartmentId"`
 	DepartmentUnit   DepartmentUnit `gorm:"foreignKey:DepartmentUnitId"`
 	DepartmentTeam   DepartmentTeam `gorm:"foreignKey:DepartmentTeamId"`
+
+	UserId uuid.UUID
+	User   User
 }

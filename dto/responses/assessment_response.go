@@ -3,6 +3,7 @@ package responses
 import (
 	"fmt"
 	"sv-sfia/models"
+	"time"
 )
 
 type AssessmentStatusResponse struct {
@@ -191,14 +192,45 @@ type SkillResult struct {
 }
 
 type SfiaRoleResult struct {
-	Name   string           `json:"name"`
-	Group  string           `json:"group"`
-	Skills []SkillResult    `json:"skills"`
-	Level  models.RoleLevel `json:"level"`
+	Name           string            `json:"name"`
+	Group          string            `json:"group"`
+	Skills         []SkillResult     `json:"skills"`
+	Level          models.RoleLevel  `json:"level"`
+	NextLevel      *models.RoleLevel `json:"next_level"`
+	RequiredSkills []RequiredSkill   `json:"required_skills"`
+}
+
+type RequiredSkill struct {
+	Name   string             `json:"name"`
+	Junior *models.SkillLevel `json:"junior"`
+	Middle *models.SkillLevel `json:"middle"`
+	Senior *models.SkillLevel `json:"senior"`
 }
 
 type SfiaRoleResultResponse struct {
 	MainRole      SfiaRoleResult  `json:"main_role"`
 	SecondaryRole *SfiaRoleResult `json:"secondary_role"`
 	InterestRole  *SfiaRoleResult `json:"interest_role"`
+}
+
+type ParticipantTrainingResponse struct {
+	DoneTrainings   []DoneTraining   `json:"done_trainings"`
+	NeededTrainings []NeededTraining `json:"needed_trainings"`
+}
+
+type DoneTraining struct {
+	Id               string                        `json:"id"`
+	Name             string                        `json:"name"`
+	StartDate        time.Time                     `json:"start_date"`
+	EndDate          time.Time                     `json:"end_date"`
+	Location         models.TrainingLocation       `json:"location"`
+	Implementation   models.TrainingImplementation `json:"implementation"`
+	Provider         string                        `json:"provider"`
+	HasCertification bool                          `json:"has_certification"`
+	GetSertification bool                          `json:"get_certification"`
+}
+
+type NeededTraining struct {
+	Name     string `json:"name"`
+	Priority *int8  `json:"priority"`
 }

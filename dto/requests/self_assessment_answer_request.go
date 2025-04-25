@@ -5,8 +5,8 @@ type SelfAssessmentRequest struct {
 }
 
 type SelfAssessmentAnswer struct {
-	// RoleId     string  `json:"role_id"`
-	// SkillId    string  `json:"skill_id"`
+	RoleId     string  `json:"role_id"`
+	SkillId    string  `json:"skill_id"`
 	QuestionId string  `json:"question_id"`
 	Value      int8    `json:"value"`
 	Evidence   string  `json:"evidence"`

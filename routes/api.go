@@ -11,7 +11,9 @@ import (
 func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	handlers := handlers.NewHandlerProvider(services)
 
-	assessmentHandlers := handlers.Assesment()
+	authHandlers := handlers.Auth()
+
+	assessmentHandlers := handlers.Assessment()
 
 	participantHandlers := handlers.Participant()
 	skillHandlers := handlers.Skill()
@@ -35,6 +37,26 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 
 	v1 := e.Group("api/v1")
 
+	// auth
+	authEp := v1.Group("auth")
+	{
+		authEp.POST("sign-up", authHandlers.Register)
+		authEp.POST("sign-in", authHandlers.Login)
+	}
+
+	// participant
+	participantEp := v1.Group("participant")
+	{
+		participantEp.POST("department", participantHandlers.AssignDepartment)
+
+		participantEp.GET("personal-information", participantHandlers.PersonalInformation)
+		participantEp.POST("personal-information", participantHandlers.PersonalInformation)
+
+		// role
+		participantEp.POST("role", participantHandlers.AssignRole)
+		participantEp.PUT("role", participantHandlers.UpdateRole)
+	}
+
 	v1.GET("treshold", tresholdHandlers.GetSkillLevelTreshold)
 
 	// tools
@@ -49,12 +71,6 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	v1.GET("departments/:id/units", departmentHandlers.GetDepartmentUnits)
 
 	// assesments
-
-	authEp := v1.Group("auth")
-	{
-		authEp.POST("sign-up", participantHandlers.Register)
-		authEp.POST("sign-in", participantHandlers.Login)
-	}
 
 	// v1.GET("skills", skillHandlers.GetSkills)
 	v1.GET("roles/skills", skillHandlers.GetSkills)
@@ -76,28 +92,32 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 
 	assessmentsEp := v1.Group("assessments")
 	{
-		assessmentsEp.POST("", assessmentHandlers.CreateNewAssessment)
-		assessmentsEp.GET("", assessmentHandlers.ListAssessment)
-		assessmentsEp.GET(":id/status", assessmentHandlers.AssessmentStatus)
-		assessmentsEp.GET(":id/results", assessmentHandlers.SfiaResult)
-		assessmentsEp.GET(":id/resume", assessmentHandlers.Resume)
-		assessmentsEp.GET(":id/tools", assessmentHandlers.GetToolAssessment)
-
-		assessmentsEp.GET("self-assessment", assessmentHandlers.GetSelfAssessments)
-		assessmentsEp.POST(":id/self-assessment", assessmentHandlers.SaveSelfAssessmentAnswer)
-
-		assessmentsEp.GET(":id/duj", assessmentHandlers.GetDujAssesments)
-		assessmentsEp.POST(":id/duj", assessmentHandlers.SaveDujAnswer)
-
-		assessmentsEp.GET("tool", assessmentHandlers.GetToolAssessment)
-		assessmentsEp.POST(":id/tools", assessmentHandlers.SaveToolAssessmentAnswers)
-
-		assessmentsEp.GET("trainings", participantHandlers.GetParticipantRoleTraining)
-		assessmentsEp.POST(":id/trainings", participantHandlers.CreateParticipantTraining)
-
-		assessmentsEp.POST(":id/updated-training", participantHandlers.CreateParticipantUpdatedTraining)
+		assessmentsEp.POST("sfia", assessmentHandlers.SaveSelfAssessmentAnswer)
 
 	}
+	// 	assessmentsEp.POST("", assessmentHandlers.CreateNewAssessment)
+	// 	assessmentsEp.GET("", assessmentHandlers.ListAssessment)
+	// 	assessmentsEp.GET(":id/status", assessmentHandlers.AssessmentStatus)
+	// 	assessmentsEp.GET(":id/results", assessmentHandlers.SfiaResult)
+	// 	assessmentsEp.GET(":id/resume", assessmentHandlers.Resume)
+	// 	assessmentsEp.GET(":id/tools", assessmentHandlers.GetToolAssessment)
+	// 	assessmentsEp.GET(":id/trainings", assessmentHandlers.GetTrainings)
+
+	// 	assessmentsEp.GET("self-assessment", assessmentHandlers.GetSelfAssessments)
+	// 	assessmentsEp.POST(":id/self-assessment", assessmentHandlers.SaveSelfAssessmentAnswer)
+
+	// 	assessmentsEp.GET(":id/duj", assessmentHandlers.GetDujAssesments)
+	// 	assessmentsEp.POST(":id/duj", assessmentHandlers.SaveDujAnswer)
+
+	// 	assessmentsEp.GET("tool", assessmentHandlers.GetToolAssessment)
+	// 	assessmentsEp.POST(":id/tools", assessmentHandlers.SaveToolAssessmentAnswers)
+
+	// 	assessmentsEp.GET("trainings", participantHandlers.GetParticipantRoleTraining)
+	// 	assessmentsEp.POST(":id/trainings", participantHandlers.CreateParticipantTraining)
+
+	// 	assessmentsEp.POST(":id/updated-training", participantHandlers.CreateParticipantUpdatedTraining)
+
+	// }
 
 	backOffice := v1.Group("backoffice")
 	{
@@ -168,6 +188,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.PUT("corporate-title", corporateTitleHandler.UpdateCorporateTitle)
 		backOffice.DELETE("corporate-title/:id", corporateTitleHandler.DeleteCorporateTitle)
 	}
+
 	management := v1.Group("/management")
 	{
 		managementTalent := management.Group("/talent")

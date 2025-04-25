@@ -102,17 +102,18 @@ func (handler assessmentHandler) GetSelfAssessments(ctx *gin.Context) {
 }
 
 func (handler assessmentHandler) SaveSelfAssessmentAnswer(ctx *gin.Context) {
-	assessmentId := ctx.Param("id")
-
 	request := requests.SelfAssessmentRequest{}
 
 	if !requests.NewValidation(ctx).Validate(&request) {
 		return
 	}
 
-	err := handler.assessmentService.StoreSelfAssessment(assessmentId, request)
+	participantId := utils.GetUserIdFromContext(ctx)
+
+	err := handler.assessmentService.StoreSelfAssessment(participantId, request)
 	if err != nil {
 		responses.ResponseError(ctx, err)
+
 		return
 	}
 
@@ -218,4 +219,29 @@ func (handler assessmentHandler) Resume(ctx *gin.Context) {
 	}
 
 	responses.WriteApiResponse(ctx, resume, "success get assessment resume", 200)
+}
+
+func (hander assessmentHandler) GetTrainings(ctx *gin.Context) {
+	assessmentId, apiErr := utils.ParseUUid(ctx.Param("id"))
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	res, apiErr := hander.assessmentService.Trainings(assessmentId)
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, res, "success get trainings", 200)
+}
+
+func (handler assessmentHandler) StoreSfia(ctx *gin.Context) {
+	request := requests.SelfAssessmentRequest{}
+
+	if !requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
 }

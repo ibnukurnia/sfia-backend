@@ -9,6 +9,20 @@ type (
 	RoleLevel  string
 )
 
+func (e RoleLevel) NextLevel() *RoleLevel {
+	if e == SENIOR {
+		return nil
+	}
+
+	nextLevel := MIDDLE
+
+	if e == MIDDLE {
+		nextLevel = SENIOR
+	}
+
+	return &nextLevel
+}
+
 func (e SkillLevel) Int() int {
 	if e == BASIC {
 		return 1

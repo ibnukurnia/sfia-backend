@@ -2,6 +2,18 @@ package responses
 
 import "sv-sfia/models"
 
+type AuthResponse struct {
+	Token string       `json:"token"`
+	User  UserResponse `json:"user"`
+}
+
+type UserResponse struct {
+	Name  string            `json:"name"`
+	Role  models.RoleAccess `json:"role"`
+	Pn    string            `json:"pn"`
+	Email string            `json:"email"`
+}
+
 type ParticipantAuthResponse struct {
 	Token             string      `json:"token"`
 	Participant       Participant `json:"participant"`

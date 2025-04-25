@@ -131,16 +131,17 @@ func (service ParticipantService) Login(req requests.LoginRequest) (*responses.P
 	}, nil
 }
 
-func (service ParticipantService) Register(req requests.RegisterRequest) (*responses.ParticipantAuthResponse, *dto.ApiError) {
-	participant := models.Participant{
-		Email: req.Email,
-		Name:  req.Name,
-		Pn:    req.Pn,
+func (service ParticipantService) Register(req requests.RegisterRequest) (*responses.AuthResponse, *dto.ApiError) {
+	user := models.User{
+		Email:      req.Email,
+		Name:       req.Name,
+		Pn:         req.Pn,
+		RoleAccess: models.USER,
 	}
 
 	err := service.db.
 		Where("email = ?", req.Email).
-		First(&models.Participant{}).
+		First(&models.User{}).
 		Error
 
 	if err == nil {
@@ -163,25 +164,26 @@ func (service ParticipantService) Register(req requests.RegisterRequest) (*respo
 		return nil, errHashed
 	}
 
-	participant.Password = hashed
+	user.Password = hashed
 
-	err = service.db.Create(&participant).Error
+	err = service.db.Create(&user).Error
 	if err != nil {
 		return nil, dto.InternalError(err)
 	}
 
-	token, errToken := service.genereteToken(participant.Uuid.String())
+	token, errToken := service.genereteToken(user.Uuid.String())
 	if errToken != nil {
 		return nil, errToken
 	}
 
-	return &responses.ParticipantAuthResponse{
+	return &responses.AuthResponse{
 		Token: token,
-		Participant: responses.Participant{
-			Name: participant.Name,
-			Pn:   participant.Pn,
+		User: responses.UserResponse{
+			Name:  user.Name,
+			Pn:    user.Pn,
+			Email: user.Email,
+			Role:  user.RoleAccess,
 		},
-		IsProfileComplete: false,
 	}, nil
 }
 
@@ -232,70 +234,72 @@ func (service ParticipantService) GetPersonalInformation(participantId uuid.UUID
 	return res, nil
 }
 
-func (service ParticipantService) StorePersonalInformation(participantId uuid.UUID, req requests.PersonalInformationRequest) *dto.ApiError {
-	departmentId, err := uuid.Parse(req.DepartmentId)
-	if err != nil {
-		zap.L().Error("error parsing uuid", zap.Error(err))
+func (service ParticipantService) StorePersonalInformation(userId uuid.UUID, req requests.PersonalInformationRequest) *dto.ApiError {
+	departmentId, errParse := utils.ParseUUid(req.DepartmentId)
 
-		return dto.InternalError(err)
+	if errParse != nil {
+		return errParse
 	}
 
-	departmentUnitId, err := uuid.Parse(req.DepartmentRoleId)
-	if err != nil {
-		zap.L().Error("error parsing uuid", zap.Error(err))
-
-		return dto.InternalError(err)
+	unitId, errParse := utils.ParseUUid(req.DepartmentUnitId)
+	if errParse != nil {
+		return errParse
 	}
 
-	departmentTeamId, err := uuid.Parse(req.DepartmentTeamId)
-	if err != nil {
-		zap.L().Error("error parsing uuid", zap.Error(err))
-
-		return dto.InternalError(err)
+	teamId, errParse := utils.ParseUUid(req.DepartmentTeamId)
+	if errParse != nil {
+		return errParse
 	}
 
 	participantDepartment := models.ParticipantDepartment{
-		ParticipantId:    participantId,
+		UserId:           userId,
 		DepartmentId:     departmentId,
-		DepartmentTeamId: departmentTeamId,
-		DepartmentUnitId: departmentUnitId,
+		DepartmentUnitId: unitId,
+		DepartmentTeamId: teamId,
 	}
 
-	tx := service.db.Begin()
-
-	exist := tx.
-		Where("participant_id = ?", participantId).
-		First(&models.ParticipantDepartment{}).
-		RowsAffected > 0
-
-	if !exist {
-		err := tx.Create(&participantDepartment).Error
-
-		if err != nil {
-			tx.Rollback()
-
-			zap.L().Error("error create participant department", zap.Error(err))
-
-			return dto.InternalError(err)
-		}
-
-		tx.Commit()
-
-		return nil
-	}
-
-	err = tx.Where("participant_id = ?", participantId).
-		Updates(&participantDepartment).Error
+	err := service.db.Create(&participantDepartment).Error
 
 	if err != nil {
-		tx.Rollback()
-
-		zap.L().Error("error updating participant department", zap.Error(err))
+		zap.L().Error("error store personal information", zap.Error(err))
 
 		return dto.InternalError(err)
 	}
 
-	tx.Commit()
+	return nil
+}
+
+func (service ParticipantService) UpdatePersonalInformation(userId uuid.UUID, req requests.PersonalInformationRequest) *dto.ApiError {
+	departmentId, errParse := utils.ParseUUid(req.DepartmentId)
+
+	if errParse != nil {
+		return errParse
+	}
+
+	unitId, errParse := utils.ParseUUid(req.DepartmentUnitId)
+	if errParse != nil {
+		return errParse
+	}
+
+	teamId, errParse := utils.ParseUUid(req.DepartmentTeamId)
+	if errParse != nil {
+		return errParse
+	}
+
+	participantDepartment := models.ParticipantDepartment{
+		UserId:           userId,
+		DepartmentId:     departmentId,
+		DepartmentUnitId: unitId,
+		DepartmentTeamId: teamId,
+	}
+
+	err := service.db.Where("user_id = ?", userId).Updates(&participantDepartment).Error
+
+	if err != nil {
+		zap.L().Error("error update personal information", zap.Error(err))
+
+		return dto.InternalError(err)
+	}
 
 	return nil
 }
@@ -467,4 +471,124 @@ func (service ParticipantService) checkProfileCompleted(participant models.Parti
 	return participant.ParticipantRole != nil &&
 		participant.ParticipantDepartment != nil &&
 		participant.ParticipantSkills != nil
+}
+
+func (service ParticipantService) AssignRoles(userId uuid.UUID, req requests.CreateParticipantRoleRequest) *dto.ApiError {
+	mainRoleId, errParse := utils.ParseUUid(req.MainRoleId)
+	if errParse != nil {
+		return errParse
+	}
+
+	participantRole := models.ParticipantRole{
+		MainRoleId:      mainRoleId,
+		UserId:          userId,
+		SecondaryRoleId: nil,
+		InterestRoleId:  nil,
+	}
+
+	if req.SecondaryRoleId != nil {
+		secondaryRoleId, errParse := utils.ParseUUid(*req.SecondaryRoleId)
+		if errParse != nil {
+			return errParse
+		}
+
+		*participantRole.SecondaryRoleId = secondaryRoleId
+	}
+
+	if req.InterestRoleId != nil {
+		interestRoleId, errParse := utils.ParseUUid(*req.InterestRoleId)
+		if errParse != nil {
+			return errParse
+		}
+
+		*participantRole.InterestRoleId = interestRoleId
+	}
+
+	err := service.db.Create(&participantRole).Error
+
+	if err != nil {
+		zap.L().Error("error assign participant role", zap.Error(err))
+
+		return dto.InternalError(err)
+	}
+
+	return nil
+}
+
+func (service ParticipantService) UpdateRoles(userId uuid.UUID, req requests.UpdateParticipantRoleRequest) *dto.ApiError {
+	mainRoleId, errParse := utils.ParseUUid(req.MainRoleId)
+	if errParse != nil {
+		return errParse
+	}
+
+	participantRole := models.ParticipantRole{
+		MainRoleId:      mainRoleId,
+		UserId:          userId,
+		SecondaryRoleId: nil,
+		InterestRoleId:  nil,
+	}
+
+	if req.SecondaryRoleId != nil {
+		secondaryRoleId, errParse := utils.ParseUUid(*req.SecondaryRoleId)
+		if errParse != nil {
+			return errParse
+		}
+
+		*participantRole.SecondaryRoleId = secondaryRoleId
+	}
+
+	if req.InterestRoleId != nil {
+		interestRoleId, errParse := utils.ParseUUid(*req.InterestRoleId)
+		if errParse != nil {
+			return errParse
+		}
+
+		*participantRole.InterestRoleId = interestRoleId
+	}
+
+	err := service.db.
+		Where("user_id = ?", userId).
+		Updates(&participantRole).Error
+
+	if err != nil {
+		zap.L().Error("error update participant role", zap.Error(err))
+
+		return dto.InternalError(err)
+	}
+
+	return nil
+}
+
+func (service ParticipantService) AssignDepartment(userId uuid.UUID, req requests.CreateParticipantDepartmentRequest) *dto.ApiError {
+	departmentId, errParse := utils.ParseUUid(req.DepartmentId)
+	if errParse != nil {
+		return errParse
+	}
+
+	unitId, errParse := utils.ParseUUid(req.DepartmentUnitId)
+	if errParse != nil {
+		return errParse
+	}
+
+	teamId, errParse := utils.ParseUUid(req.DepartmentTeamId)
+	if errParse != nil {
+		return errParse
+	}
+
+	participantDepartment := models.ParticipantDepartment{
+		UserId:           userId,
+		DepartmentId:     departmentId,
+		DepartmentUnitId: unitId,
+		DepartmentTeamId: teamId,
+	}
+
+	err := service.db.Create(&participantDepartment).Error
+
+	if err != nil {
+		zap.L().Error("error assign participant department", zap.Error(err))
+
+		return dto.InternalError(err)
+	}
+
+	return nil
 }

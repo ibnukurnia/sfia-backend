@@ -17,6 +17,82 @@ type participantHandler struct {
 	trainingService    *services.TrainingService
 }
 
+func (handler participantHandler) AssignRole(ctx *gin.Context) {
+	userId := utils.GetUserIdFromContext(ctx)
+
+	request := requests.CreateParticipantRoleRequest{}
+
+	if requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
+	apiErr := handler.participantService.AssignRoles(userId, request)
+
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, nil, "success assign role", 201)
+}
+
+func (handler participantHandler) UpdateRole(ctx *gin.Context) {
+	userId := utils.GetUserIdFromContext(ctx)
+
+	request := requests.UpdateParticipantRoleRequest{}
+
+	if requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
+	apiErr := handler.participantService.UpdateRoles(userId, request)
+
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, nil, "success update role", 200)
+}
+
+func (handler participantHandler) AssignDepartment(ctx *gin.Context) {
+	userId := utils.GetUserIdFromContext(ctx)
+
+	request := requests.CreateParticipantDepartmentRequest{}
+
+	if requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
+	apiErr := handler.participantService.AssignDepartment(userId, request)
+
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, nil, "success assign department", 201)
+}
+
+func (handler participantHandler) PersonalInformation(ctx *gin.Context) {
+	userId := utils.GetUserIdFromContext(ctx)
+
+	request := requests.PersonalInformationRequest{}
+
+	if requests.NewValidation(ctx).Validate(&request) {
+		return
+	}
+
+	apiErr := handler.participantService.StorePersonalInformation(userId, request)
+
+	if apiErr != nil {
+		responses.ResponseError(ctx, apiErr)
+		return
+	}
+
+	responses.WriteApiResponse(ctx, nil, "success store personal information", 200)
+}
+
 func (handler participantHandler) Login(ctx *gin.Context) {
 	request := requests.LoginRequest{}
 
@@ -232,4 +308,23 @@ func (handler participantHandler) CreateParticipantUpdatedTraining(ctx *gin.Cont
 	}
 
 	responses.WriteApiResponse(ctx, nil, "success storing trainings", 201)
+}
+
+func (handler participantHandler) GetPersonalInformation(ctx *gin.Context) {
+	// userId := utils.GetUserIdFromContext(ctx)
+
+	// request := requests.PersonalInformationRequest{}
+
+	// if requests.NewValidation(ctx).Validate(&request) {
+	// 	return
+	// }
+
+	// apiErr := handler.participantService.PersonalInformation(userId, request)
+
+	// if apiErr != nil {
+	// 	responses.ResponseError(ctx, apiErr)
+	// 	return
+	// }
+
+	// responses.WriteApiResponse(ctx, nil, "success store personal information", 200)
 }

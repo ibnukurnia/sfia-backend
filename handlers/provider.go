@@ -15,6 +15,12 @@ func NewHandlerProvider(serviceProvider *services.ServiceProvider) *HandlerProvi
 	}
 }
 
+func (provider HandlerProvider) Auth() *authHandler {
+	return &authHandler{
+		authService: provider.serviceProvider.AuthService,
+	}
+}
+
 func (provider *HandlerProvider) Role() *roleHandler {
 	return &roleHandler{
 		roleService: provider.serviceProvider.RoleService,
@@ -27,7 +33,7 @@ func (provider *HandlerProvider) Department() *departmentHandler {
 	}
 }
 
-func (provider *HandlerProvider) Assesment() *assessmentHandler {
+func (provider *HandlerProvider) Assessment() *assessmentHandler {
 	return &assessmentHandler{
 		assessmentService: provider.serviceProvider.AssessmentService,
 		sfiaService:       provider.serviceProvider.SfiaService,

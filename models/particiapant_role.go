@@ -15,4 +15,7 @@ type ParticipantRole struct {
 	InterestRoleSkills  []RoleSkill `gorm:"foreignKey:RoleId;references:InterestRoleId"`
 	ParticipantId       uuid.UUID
 	AssessmentId        uuid.UUID
+
+	UserId uuid.UUID
+	User   User
 }

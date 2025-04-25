@@ -6,6 +6,7 @@ import (
 )
 
 type ServiceProvider struct {
+	AuthService           *AuthService
 	AssessmentService     *AssessmentService
 	RoleService           *RoleService
 	DepartmentService     *DepartmentService
@@ -27,6 +28,7 @@ type ServiceProvider struct {
 
 func NewServiceProvider(db *gorm.DB, minioClient *minio.Client) *ServiceProvider {
 	return &ServiceProvider{
+		AuthService:           newAuthService(db),
 		AssessmentService:     newAssessmentService(db),
 		RoleService:           newRoleService(db),
 		DepartmentService:     newDeparmentService(db),
