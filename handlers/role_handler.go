@@ -26,7 +26,14 @@ func (handler *roleHandler) GetRoles(ctx *gin.Context) {
 }
 
 func (handler *roleHandler) GetRoleList(ctx *gin.Context) {
-	roles, err := handler.roleService.GetRoleList()
+	request := requests.GetRoleListRequest{}
+
+	if err := ctx.ShouldBindQuery(&request); err != nil {
+		responses.ResponseError(ctx, dto.BadRequestError(err))
+		return
+	}
+
+	roles, err := handler.roleService.GetRoleList(request)
 	if err != nil {
 		responses.ResponseError(ctx, err)
 		return

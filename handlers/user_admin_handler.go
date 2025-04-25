@@ -15,13 +15,19 @@ type userAdminHandler struct {
 }
 
 func (handler *userAdminHandler) GetUserAdmin(ctx *gin.Context) {
-	tresholds, err := handler.userAdminService.GetUserAdmin()
+	var req requests.UserAdminRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		responses.ResponseError(ctx, dto.BadRequestError(err))
+		return
+	}
+
+	result, err := handler.userAdminService.GetUserAdmin(req)
 	if err != nil {
 		responses.ResponseError(ctx, err)
 		return
 	}
 
-	responses.WriteApiResponse(ctx, tresholds, "success get treshold list", 200)
+	responses.WriteApiResponse(ctx, result, "success get user admin list", 200)
 }
 
 func (handler *userAdminHandler) UpdateUserRole(ctx *gin.Context) {

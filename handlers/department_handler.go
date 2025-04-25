@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"sv-sfia/dto"
 	"sv-sfia/dto/requests"
 	"sv-sfia/dto/responses"
 	"sv-sfia/services"
@@ -14,8 +15,14 @@ type departmentHandler struct {
 }
 
 func (handler *departmentHandler) GetDepartments(ctx *gin.Context) {
-	departments, apiErr := handler.deparmentService.GetDepartments()
+	request := requests.GetDepartmentsRequest{}
 
+	if err := ctx.ShouldBindQuery(&request); err != nil {
+		responses.ResponseError(ctx, dto.BadRequestError(err))
+		return
+	}
+
+	departments, apiErr := handler.deparmentService.GetDepartments(request)
 	if apiErr != nil {
 		responses.ResponseError(ctx, apiErr)
 		return

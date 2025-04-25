@@ -120,3 +120,9 @@ func (provider *HandlerProvider) ManagementUseCase() *management.ManagementUseCa
 func (provider *HandlerProvider) ManagemenRoleAndSkill() *management.RoleAndSkillManagement {
 	return &management.RoleAndSkillManagement{}
 }
+
+func (provider *HandlerProvider) CorporateTitle() *corporateTitleHandler {
+	return &corporateTitleHandler{
+		corporateTitleService: provider.serviceProvider.CorporateTitleService,
+	}
+}

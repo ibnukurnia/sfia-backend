@@ -187,19 +187,23 @@ func (service RoleService) GetRoleTraining(participantId uuid.UUID) (*responses.
 	return &responses.ParticipantTraingResponse{Roles: roleResponse}, nil
 }
 
-func (service *RoleService) GetRoleList() ([]responses.RoleListResponse, *dto.ApiError) {
+func (service *RoleService) GetRoleList(req requests.GetRoleListRequest) ([]responses.RoleListResponse, *dto.ApiError) {
 	roles := []responses.RoleListResponse{}
 
-	err := service.db.Table("roles").
+	query := service.db.Table("roles").
 		Select("roles.uuid, roles.name, role_groups.uuid as group_id, role_groups.name AS group_name").
 		Joins("LEFT JOIN role_groups ON roles.group_id = role_groups.uuid AND role_groups.deleted_at IS NULL").
-		Where("roles.deleted_at IS NULL").
-		Order("roles.created_at ASC").
+		Where("roles.deleted_at IS NULL")
+
+	if req.Search != "" {
+		query = query.Where("roles.name ILIKE ?", "%"+req.Search+"%")
+	}
+
+	err := query.Order("roles.created_at ASC").
 		Find(&roles).Error
 
 	if err != nil {
 		zap.L().Error("error querying roles", zap.Error(err))
-
 		return nil, dto.InternalError(err)
 	}
 

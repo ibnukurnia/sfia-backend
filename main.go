@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"os"
 	"strconv"
 	"sv-sfia/db"
@@ -12,8 +10,9 @@ import (
 	"sv-sfia/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gookit/goutil/dump"
 	"github.com/joho/godotenv"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -47,7 +46,6 @@ func main() {
 	}
 
 	host := fmt.Sprintf("%s:%s", os.Getenv("MINIO_IP"), os.Getenv("MINIO_PORT_API"))
-	dump.P(host)
 
 	minioClient, err := minio.New(host, &minio.Options{
 		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY"), os.Getenv("MINIO_SECRET_KEY"), ""),
@@ -79,9 +77,7 @@ func main() {
 		zap.L().Info("Starting HTTP server", zap.Int("port", appPort))
 	}()
 
-	if err := srv.Run(fmt.Sprintf(":%d", appPort)); err != nil {
-		zap.L().Error("Failed to start server: ", zap.Error(err))
+	if err := srv.Run(fmt.Sprintf("localhost:%d", appPort)); err != nil {
+		zap.L().Error("Failed to start server: s", zap.Error(err))
 	}
 }
-
-// goose -dir migrations clickhouse "http://localhost:9005?database=sfia&username=default&password=" up

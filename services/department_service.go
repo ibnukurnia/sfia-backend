@@ -21,12 +21,16 @@ func newDeparmentService(db *gorm.DB) *DepartmentService {
 	}
 }
 
-
-func (service *DepartmentService) GetDepartments() ([]responses.DepartmentResponse, *dto.ApiError) {
+func (service *DepartmentService) GetDepartments(req requests.GetDepartmentsRequest) ([]responses.DepartmentResponse, *dto.ApiError) {
 	departments := []models.Department{}
 
-	err := service.db.
-		Order("created_at asc").
+	query := service.db
+
+	if req.Search != "" {
+		query = query.Where("name ILIKE ?", "%"+req.Search+"%")
+	}
+
+	err := query.Order("created_at asc").
 		Find(&departments).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -139,9 +143,9 @@ func (service *DepartmentService) GetDepartmentTeams(departmentId string) ([]res
 
 	for _, team := range teams {
 		response = append(response, responses.DepartmentTeamResponse{
-			Id:   team.Uuid.String(),
+			Id:           team.Uuid.String(),
 			DepartmentId: team.DepartmentId.String(),
-			Name: team.Name,
+			Name:         team.Name,
 		})
 	}
 
@@ -239,9 +243,9 @@ func (service *DepartmentService) GetDepartmentUnits(departmentId string) ([]res
 
 	for _, unit := range units {
 		response = append(response, responses.DepartmentRoleResponse{
-			Id:   unit.Uuid.String(),
+			Id:           unit.Uuid.String(),
 			DepartmentId: unit.DepartmentId.String(),
-			Name: unit.Name,
+			Name:         unit.Name,
 		})
 	}
 

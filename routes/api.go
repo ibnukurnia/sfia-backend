@@ -25,11 +25,13 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 	trainigMasterHandlers := handlers.TrainingMaster()
 	toolMasterHandlers := handlers.Tools()
 	toolHandler := handlers.Tool()
+
 	managementTalentHandler := handlers.ManagementTalent()
 	managementResumeHandler := handlers.ManagementResume()
 	managementAplikasiHandler := handlers.ManagementAplikasi()
 	managementUseCaseHandler := handlers.ManagementUseCase()
 	managementRoleAndSkillHandler := handlers.ManagemenRoleAndSkill()
+	corporateTitleHandler := handlers.CorporateTitle()
 
 	v1 := e.Group("api/v1")
 
@@ -147,7 +149,7 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.PUT("duj", dujAdminHandlers.UpdateDujAdmin)
 		backOffice.DELETE("duj/:id", dujAdminHandlers.DeleteDujAdmin)
 
-		backOffice.GET("user-admin", userAdminHandlers.GetUserAdmin)
+		backOffice.POST("user-admin", userAdminHandlers.GetUserAdmin)
 		backOffice.PUT("user-admin", userAdminHandlers.UpdateUserRole)
 		backOffice.DELETE("user-admin/:id", userAdminHandlers.DeleteUserAdmin)
 
@@ -160,6 +162,11 @@ func InitApiRouter(e *gin.Engine, services *services.ServiceProvider) {
 		backOffice.POST("tools", toolMasterHandlers.AddTool)
 		backOffice.PUT("tools", toolMasterHandlers.UpdateTools)
 		backOffice.DELETE("tools/:id", toolMasterHandlers.DeleteTools)
+
+		backOffice.GET("corporate-title", corporateTitleHandler.GetCorporateTitles)
+		backOffice.POST("corporate-title", corporateTitleHandler.AddCorporateTitle)
+		backOffice.PUT("corporate-title", corporateTitleHandler.UpdateCorporateTitle)
+		backOffice.DELETE("corporate-title/:id", corporateTitleHandler.DeleteCorporateTitle)
 	}
 	management := v1.Group("/management")
 	{
